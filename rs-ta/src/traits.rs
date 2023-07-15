@@ -1,3 +1,12 @@
+pub trait Reset {
+    fn reset(&mut self);
+}
+
+/// Return the period used by the indicator.
+pub trait Period {
+    fn period(&self) -> usize;
+}
+
 pub trait Next<T> {
     type Output;
     fn next(&mut self, input: T) -> Self::Output;

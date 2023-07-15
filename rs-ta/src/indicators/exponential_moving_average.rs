@@ -1,7 +1,8 @@
 
+use std::fmt;
 use crate::errors::{Result, TaError};
 
-use crate::{Next, Close};
+use crate::{Next, Close, Reset, Period};
 
 pub struct ExponentialMovingAverage {
     period: usize,
@@ -38,11 +39,36 @@ impl Next<f64> for ExponentialMovingAverage {
     }
 }
 
+impl Reset for ExponentialMovingAverage {
+   fn reset(&mut self) {
+       self.current = 0.0;
+       self.is_new = true;
+   } 
+}
+
+impl Period for ExponentialMovingAverage {
+    fn period(&self) -> usize {
+        self.period
+    }
+}
+
 impl<T: Close> Next<&T> for ExponentialMovingAverage {
     type Output = f64;
 
     fn next(&mut self, input: &T) -> Self::Output {
         self.next(input.close())
+    }
+}
+
+impl Default for ExponentialMovingAverage {
+    fn default() -> Self {
+        Self::new(0).unwrap()
+    }
+}
+
+impl fmt::Display for ExponentialMovingAverage {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "EMA({})", self.period)
     }
 }
 
