@@ -4,6 +4,7 @@ use crate::errors::{Result, TaError};
 
 use crate::{Next, Close, Reset, Period};
 
+#[derive(Debug, Clone)]
 pub struct ExponentialMovingAverage {
     period: usize,
     k: f64,
