@@ -27,8 +27,8 @@ pub enum DataKind {
 }
 
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Debug, Deserialize, Serialize)]
-pub struct MarketEvent<T> {
-    pub exchange_time: DateTime<Utc>,
-    pub received_time: DateTime<Utc>,
+pub struct DataEvent<T> {
     pub kind: T,
+    pub exchange_time: Option<DateTime<Utc>>,
+    pub received_time: Option<DateTime<Utc>>,
 }

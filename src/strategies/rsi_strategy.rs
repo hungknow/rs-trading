@@ -3,25 +3,24 @@ use std::collections::HashMap;
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
 
-use crate::{indicators::RelativeStrengthIndex, data::{MarketEvent, DataKind}, Next};
+use crate::{indicators::RelativeStrengthIndex, data::{DataEvent, DataKind}, Next};
 
-use super::{SignalGenerator, Signal, Decision, SignalStrength};
+use super::{SignalGenerator, SignalEvent, Decision, SignalStrength};
 
 /// Configuration for constructing a [`RSIStrategy`] via the new() constructor method.
 #[derive(Copy, Clone, Eq, PartialEq, PartialOrd, Debug, Deserialize, Serialize)]
-pub struct Config {
+pub struct StrategyRsiConfig {
     pub rsi_period: usize,
 }
 
-
 #[derive(Clone, Debug)]
-pub struct StrategyRsi {
+pub struct RsiStrategy {
     rsi: RelativeStrengthIndex,
 }
 
-impl StrategyRsi {
+impl RsiStrategy {
     /// Constructs a new [`RSIStrategy`] component using the provided configuration struct.
-    pub fn new(config: Config) -> Self {
+    pub fn new(config: StrategyRsiConfig) -> Self {
         let rsi_indicator = RelativeStrengthIndex::new(config.rsi_period)
             .expect("Failed to construct RSI indicator");
 
@@ -32,21 +31,21 @@ impl StrategyRsi {
         let mut signals = HashMap::with_capacity(4);
 
         if rsi < 40.0 {
-            signals.insert(Decision::Long, StrategyRsi::calculate_signal_strength());
+            signals.insert(Decision::Long, RsiStrategy::calculate_signal_strength());
         }
         if rsi > 60.0 {
             signals.insert(
                 Decision::CloseLong,
-                StrategyRsi::calculate_signal_strength(),
+                RsiStrategy::calculate_signal_strength(),
             );
         }
         if rsi > 60.0 {
-            signals.insert(Decision::Short, StrategyRsi::calculate_signal_strength());
+            signals.insert(Decision::Short, RsiStrategy::calculate_signal_strength());
         }
         if rsi < 40.0 {
             signals.insert(
                 Decision::CloseShort,
-                StrategyRsi::calculate_signal_strength(),
+                RsiStrategy::calculate_signal_strength(),
             );
         }
 
@@ -58,9 +57,9 @@ impl StrategyRsi {
     }
 }
 
-impl SignalGenerator for StrategyRsi {
-    fn generate_signal(&mut self, market: &MarketEvent<DataKind>) -> Option<Signal> {
-        let candle_close = match &market.kind {
+impl SignalGenerator for RsiStrategy {
+    fn generate_signal(&mut self, data_event: &DataEvent<DataKind>) -> Option<SignalEvent<DataKind>> {
+        let candle_close = match &data_event.kind {
             DataKind::Candle(candle) => candle.close,
             _ => return None,
         }; 
@@ -69,15 +68,16 @@ impl SignalGenerator for StrategyRsi {
         let rsi = self.rsi.next(candle_close);
 
          // Generate advisory signals map
-         let signals = StrategyRsi::generate_signals_map(rsi);
+         let signals = RsiStrategy::generate_signals_map(rsi);
 
          // If signals map is empty, return no SignalEvent
          if signals.is_empty() {
              return None;
          }
 
-        Some(Signal {
-            time: Utc::now(),
+        Some(SignalEvent {
+            created_at: Utc::now(),
+            data_event: data_event.clone(),
             // market_meta: MarketMeta {
             //     close: candle_close,
             //     time: market.exchange_time,

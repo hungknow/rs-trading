@@ -1,12 +1,12 @@
 mod rsi_strategy;
-pub use rsi_strategy::StrategyRsi;
+pub use rsi_strategy::{RsiStrategy, StrategyRsiConfig};
 use serde::{Deserialize, Serialize};
 
 use std::collections::HashMap;
 
 use chrono::{DateTime, Utc};
 
-use crate::data::{DataKind, MarketEvent};
+use crate::data::{DataKind, DataEvent};
 
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Deserialize, Serialize)]
 pub enum Decision {
@@ -17,8 +17,8 @@ pub enum Decision {
 }
 
 pub trait SignalGenerator {
-    /// Optionally return a [`Signal`] given input [`MarketEvent`].
-    fn generate_signal(&mut self, market: &MarketEvent<DataKind>) -> Option<Signal>;
+    /// Optionally return a [`SignalEvent`] given input [`MarketEvent`].
+    fn generate_signal(&mut self, data_event: &DataEvent<DataKind>) -> Option<SignalEvent<DataKind>>;
 }
 
 /// Strength of an advisory [`Signal`] decision produced by [`SignalGenerator`] strategy.
@@ -26,8 +26,9 @@ pub trait SignalGenerator {
 pub struct SignalStrength(pub f64);
 
 #[derive(Clone, PartialEq, Debug, Deserialize, Serialize)]
-pub struct Signal {
-    pub time: DateTime<Utc>,
+pub struct SignalEvent<DataKind> {
+    pub created_at: DateTime<Utc>,
+    pub data_event: DataEvent<DataKind>,
     pub signals: HashMap<Decision, SignalStrength>,
     // Metadata propagated from the [`MarketEvent`] that yielded this [`Signal`].
     // pub market_meta: MarketMeta,
