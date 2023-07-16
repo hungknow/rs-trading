@@ -1,4 +1,5 @@
 use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
 
 mod candle;
 pub use candle::*;
@@ -12,4 +13,13 @@ pub struct MarketMeta {
     pub close: f64,
     /// Exchange timestamp from the source market event.
     pub time: DateTime<Utc>,
+}
+
+#[derive(Clone, PartialEq, PartialOrd, Debug, Deserialize, Serialize)]
+pub enum DataKind {
+    // Trade(PublicTrade),
+    // OrderBookL1(OrderBookL1),
+    // OrderBook(OrderBook),
+    Candle(Candle),
+    // Liquidation(Liquidation),
 }
