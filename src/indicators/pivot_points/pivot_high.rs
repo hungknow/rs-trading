@@ -42,7 +42,7 @@ impl Next<f64> for PivotHigh {
         let ref_val = self.bars[self.next_num.into()];
         for i in 0..self.next_num.into() {
             let v = *self.bars.get(i).unwrap();
-            if ref_val < v {
+            if ref_val <= v {
                 return None;
             }
         }
@@ -50,7 +50,7 @@ impl Next<f64> for PivotHigh {
         let starting_index: usize = (self.next_num + 1).into();
         for i in 0..self.previous_num.into() {
             let v = *self.bars.get(starting_index + i).unwrap();
-            if ref_val <= v {
+            if ref_val < v {
                 return None;
             }
         }
@@ -60,5 +60,25 @@ impl Next<f64> for PivotHigh {
 }
 
 mod tests {
+    use super::*;
 
+    #[test]
+    fn test_next() {
+        let mut pivotHigh = PivotHigh::new(2, 2);
+
+        assert_eq!(pivotHigh.next(1.0), None);
+        assert_eq!(pivotHigh.next(2.0), None);
+        assert_eq!(pivotHigh.next(3.0), None);
+        assert_eq!(pivotHigh.next(2.0), None);
+        assert_eq!(pivotHigh.next(1.0), Some(3.0));
+        assert_eq!(pivotHigh.next(6.0), None);
+        assert_eq!(pivotHigh.next(7.0), None);
+        assert_eq!(pivotHigh.next(8.0), None);
+        assert_eq!(pivotHigh.next(9.0), None);
+        assert_eq!(pivotHigh.next(8.0), None);
+        assert_eq!(pivotHigh.next(9.0), None);
+        assert_eq!(pivotHigh.next(10.0), None);
+        assert_eq!(pivotHigh.next(7.0), None);
+        assert_eq!(pivotHigh.next(8.0), Some(10.0));
+    }
 }
