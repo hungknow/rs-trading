@@ -1,5 +1,5 @@
 use chrono::{DateTime, Utc};
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Copy, Clone, PartialEq, PartialOrd, Debug, Deserialize, Serialize)]
 pub struct Candle {
@@ -10,4 +10,10 @@ pub struct Candle {
     pub close: f64,
     pub volume: Option<f64>,
     pub trade_count: Option<f64>,
+}
+
+#[derive(Copy, Clone, PartialEq, PartialOrd, Debug, Deserialize, Serialize)]
+pub struct TimestampValue {
+    pub timestamp: DateTime<Utc>,
+    pub value: f64,
 }

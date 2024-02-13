@@ -3,9 +3,13 @@ use std::collections::HashMap;
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
 
-use crate::{indicators::RelativeStrengthIndex, data::{DataEvent, DataKind}, Next};
+use crate::{
+    data::{DataEvent, DataKind},
+    indicators::RelativeStrengthIndex,
+    Next, TimestampValueDS,
+};
 
-use super::{SignalGenerator, SignalEvent, Decision, SignalStrength};
+use super::{Decision, SignalEvent, SignalGenerator, SignalStrength};
 
 /// Configuration for constructing a [`RSIStrategy`] via the new() constructor method.
 #[derive(Copy, Clone, Eq, PartialEq, PartialOrd, Debug, Deserialize, Serialize)]
@@ -57,32 +61,40 @@ impl RsiStrategy {
     }
 }
 
-impl SignalGenerator for RsiStrategy {
-    fn generate_signal(&mut self, data_event: &DataEvent<DataKind>) -> Option<SignalEvent<DataKind>> {
-        let candle_close = match &data_event.kind {
-            DataKind::Candle(candle) => candle.close,
-            _ => return None,
-        }; 
+// impl SignalGenerator for RsiStrategy {
+//     // fn generate_signal(&mut self, data_event: &DataEvent<DataKind>) -> Option<SignalEvent<DataKind>> {
+//     fn generate_signal(
+//         &mut self,
+//         timestamp_value: &impl TimestampValueDS,
+//     ) -> Option<SignalEvent<DataKind>> {
+//         // let candle_close = match &data_event.kind {
+//         //     DataKind::Candle(candle) => candle.close,
+//         //     _ => return None,
+//         // };
+//         let current_value = timestamp_value.value();
 
-        // Calculate the next RSI value using the new MarketEvent Candle data
-        let rsi = self.rsi.next(candle_close);
+//         // Calculate the next RSI value using the new MarketEvent Candle data
+//         let rsi = self.rsi.calc(current_value);
 
-         // Generate advisory signals map
-         let signals = RsiStrategy::generate_signals_map(rsi);
+//         // Generate advisory signals map
+//         let signals = RsiStrategy::generate_signals_map(rsi[0]);
 
-         // If signals map is empty, return no SignalEvent
-         if signals.is_empty() {
-             return None;
-         }
+//         // If signals map is empty, return no SignalEvent
+//         if signals.is_empty() {
+//             return None;
+//         }
 
-        Some(SignalEvent {
-            created_at: Utc::now(),
-            data_event: data_event.clone(),
-            // market_meta: MarketMeta {
-            //     close: candle_close,
-            //     time: market.exchange_time,
-            // },
-            signals,
-        })
-    }
-}
+//         Some(SignalEvent {
+//             created_at: Utc::now(),
+//             data_event: DataEvent{
+//                 kind: DataKind::TimestampValue(timestamp_value.get_at_index(0)),
+//             },
+//             // data_event: data_event.clone(),
+//             // market_meta: MarketMeta {
+//             //     close: candle_close,
+//             //     time: market.exchange_time,
+//             // },
+//             signals,
+//         })
+//     }
+// }

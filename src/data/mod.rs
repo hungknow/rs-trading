@@ -4,6 +4,11 @@ use serde::{Deserialize, Serialize};
 mod candle;
 pub use candle::*;
 
+mod data_source;
+pub use data_source::*;
+mod csv_data_source;
+pub use csv_data_source::*;
+
 pub mod historical;
 pub mod traits;
 
@@ -23,12 +28,13 @@ pub enum DataKind {
     // OrderBookL1(OrderBookL1),
     // OrderBook(OrderBook),
     Candle(Candle),
+    TimestampValue(TimestampValue),
     // Liquidation(Liquidation),
 }
 
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Debug, Deserialize, Serialize)]
 pub struct DataEvent<T> {
     pub kind: T,
-    pub exchange_time: Option<DateTime<Utc>>,
-    pub received_time: Option<DateTime<Utc>>,
+    // pub exchange_time: Option<DateTime<Utc>>,
+    // pub received_time: Option<DateTime<Utc>>,
 }

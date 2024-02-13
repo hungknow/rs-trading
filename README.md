@@ -14,6 +14,10 @@ All libraries that useful for trading written in Rust
 ## Run examples
 
 ```
+jupyter notebook
+```
+
+```
 cargo run --example historical_candle
 ```
 
