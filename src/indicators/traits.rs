@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::{rc::Rc, sync::mpsc};
 
 use chrono::{DateTime, Utc};
 
@@ -12,6 +12,13 @@ pub trait Indicator {
         &self,
         input: (&Self::StateType, Self::InputType),
     ) -> (Self::StateType, Self::OutputType);
+
+    // fn get_event_receiver() -> mpsc::Receiver<Self::StateType>;
+}
+
+pub struct IndicatorContainer<T: Indicator> {
+    indicator: T,
+    state: Rc<T::StateType>,
 }
 
 // Contains the value of TA

@@ -14,8 +14,8 @@ impl RelativeStrengthIndex {
     pub fn new(period: usize) -> Result<Self> {
         Ok(Self {
             period,
-            up_ema_indicator: ExponentialMovingAverage::new().unwrap(),
-            down_ema_indicator: ExponentialMovingAverage::new().unwrap(),
+            up_ema_indicator: ExponentialMovingAverage::new(),
+            down_ema_indicator: ExponentialMovingAverage::new(),
             // prev_val: 0.0,
             // is_new: true,
         })

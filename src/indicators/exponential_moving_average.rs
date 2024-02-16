@@ -33,7 +33,7 @@ impl ExponentialMovingAverageState {
 }
 
 impl ExponentialMovingAverage {
-    pub fn new() -> Result<Self> {
+    pub fn new() -> Self {
         // match period {
         //     0 => Err(TaError::InvalidParameter),
         //     _ => Ok(Self {
@@ -43,7 +43,7 @@ impl ExponentialMovingAverage {
         //         // is_new: true,
         //     }),
         // }
-        Ok(Self {})
+        Self {}
     }
 
     // pub fn new_state(&self) -> Rc<ExponentialMovingAverageState> {
@@ -172,7 +172,7 @@ impl Reset for ExponentialMovingAverageState {
 
 impl Default for ExponentialMovingAverage {
     fn default() -> Self {
-        Self::new().unwrap()
+        Self::new()
     }
 }
 
@@ -191,7 +191,7 @@ mod tests {
 
     #[test]
     fn test_next() {
-        let ema = ExponentialMovingAverage::new().unwrap();
+        let ema = ExponentialMovingAverage::new();
         let ema_state = Rc::new(ExponentialMovingAverageState::new(3));
 
         let (ema_state, new_value) = ema.next((&ema_state, 2.0));

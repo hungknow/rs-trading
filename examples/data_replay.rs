@@ -1,10 +1,11 @@
 use std::{rc::Rc, sync::Arc};
 
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, Duration, Utc};
 use plotters::{
     backend::{DrawingBackend, SVGBackend},
     chart::{ChartBuilder, ChartContext},
     coord::CoordTranslate,
+    data,
     element::PathElement,
     series::LineSeries,
 };
@@ -16,8 +17,9 @@ use rstrading::{
     },
     drawing::{SubChart, SubChartState},
     indicators::{traits::Indicator, ExponentialMovingAverage, ExponentialMovingAverageState},
-    Next, TA, TimestampValueDS,
+    Next, TimestampValueDS, TA,
 };
+use tokio::task;
 
 struct EmaDrawing {
     ema: ExponentialMovingAverage,
@@ -33,7 +35,7 @@ struct EmaDrawing {
 // }
 
 impl SubChart for EmaDrawing {
-    fn get_state(&self) -> impl SubChartState {
+    fn get_state(&self) -> dyn SubChartState {
         self
     }
 
@@ -41,11 +43,11 @@ impl SubChart for EmaDrawing {
         &self,
         chart: &mut ChartContext<'a, DB, CT>,
     ) {
-        chart
-            .draw_series(LineSeries::new(ema_line_data.clone(), BLUE.stroke_width(1)))
-            .unwrap()
-            .label("SMA 15")
-            .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &RGBColor(150, 50, 168)));
+        // chart
+        //     .draw_series(LineSeries::new(ema_line_data.clone(), BLUE.stroke_width(1)))
+        //     .unwrap()
+        //     .label("SMA 15")
+        //     .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &RGBColor(150, 50, 168)));
     }
 }
 
@@ -105,7 +107,7 @@ fn calculate_new_ta<T: TA>(
     new_ta_time_aware = TATimeAware {
         state: new_state,
         // value_list: new_data.clone().,
-    }; 
+    };
 }
 
 // TA's from_time < candle's from_time:
@@ -181,20 +183,51 @@ fn handleNewData(
     return exponentialMovingAverage;
 }
 
+async fn handleCandleDisplayDataSourceEvent(
+    old_state: Rc<CandleDisplayDataSourceState>,
+    event: CandleDisplayDataSourceEvent,
+    ta_executors: Vec<(dyn Indicator, Rc<Indicator::StateType>)>,
+) {
+    match event {
+        CandleDisplayDataSourceEvent::DisplayTimeRangeChanged(event) => {
+            // with the new display state, calculate the new candle stick
+            // Trigger the data pipeline after reading one candle stick
+            // let new_inputs = candleDisplayDS.get_display_data();
+            // let ema_value = calc_ema(new_inputs, 3);
+
+            //TODO: Spawn the thread task to process the new data
+            // task::spawn_blocking(|| {
+            // Calculate the new TA value
+            for (ta_executor, ta_state) in ta_executors {
+                calculate_new_ta(old_state, event.state, ta_executor, ta_state);
+            }
+
+            // });
+
+            // After the TA value is calculated, draw the new chart
+        }
+        _ => {}
+    }
+}
+
 fn main() {
     // Prepare the chart
     // The candle is read from CSV file
     let candleDS = CandleCSVDataSource::new();
     // let metadatas = candleDS.get_metadata();
     // let targetMetadata = metadatas[0];
-    
+
     // TA
-    let exponentialMovingAverage = ExponentialMovingAverage::new().unwrap();
+    let exponential_moving_average = (
+        ExponentialMovingAverage::new(),
+        Rc::new(ExponentialMovingAverageState::new(3)),
+    );
 
     // All states
     let candleDisplayDataSourceState: Rc<CandleDisplayDataSourceState>;
-    let exponentialMovingAverageState = ExponentialMovingAverageState::new(3);
 
+    // Receive the event from Data source
+    // Send event to each indicator via channel
     // Event listener
     // candleDS.on(
     //     CandleDisplayDataSourceEventName::DisplayTimeRangeChanged,
@@ -216,6 +249,9 @@ fn main() {
     //         // Redraw the chart
     //     },
     // );
+
+    // Listen for any message for all channels created for all indicators
+    // Trigger the chart drawing with new data
 
     // Read the candlestick from time to time
     // let candleDS = candleDS.get_data_source_from(DataSourceGet {
@@ -242,13 +278,40 @@ fn main() {
     //     },
     // );
 
+    let mut candle_ds_rx_channel = candleDS.get_event_rx_channel();
+    // spawn thread to listen for the event
+    task::spawn(async move {
+        loop {
+            select! {
+                event = candle_ds_rx_channel.recv() => {
+                    match event {
+                        Some(event) => {
+                            handleCandleDisplayDataSourceEvent(event, exponential_moving_average);
+                        }
+                        None => {
+                            // No more event to receive
+                            // exit loop
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Get the available data time range from candle data source
+    let state = candleDS.get_state();
+    let data_start_time = state.data_start_time;
+    let data_end_time = state.data_end_time;
+
+    let next_end_time = data_start_time + Duration::minutes(5);
     // Set the new time range
-    candleDS.set_display_range(
+    candleDS.set_data_time_range(
         // new start time
-        candleDisplayDataSourceState.start_time,
+        data_start_time,
         // old start time
-        candleDisplayDataSourceState.end_time,
-    )
+        next_end_time,
+    );
     // ) {
     //     // Some(event) => {
     //         // Update the new state
