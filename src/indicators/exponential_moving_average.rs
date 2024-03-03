@@ -5,7 +5,7 @@ use std::fmt;
 
 use super::traits::Indicator;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
 pub struct ExponentialMovingAverageState {
     period: usize,
     k: f64,
@@ -13,7 +13,7 @@ pub struct ExponentialMovingAverageState {
     // current_timestamp: DateTime<Utc>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
 pub struct ExponentialMovingAverage {
     // period: usize,
     // k: f64,

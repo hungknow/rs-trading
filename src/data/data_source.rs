@@ -40,32 +40,40 @@ pub struct CandleDisplayDataSourceState {
     pub resolution: Resolution,
     pub display_start_time: DateTime<Utc>,
     pub display_end_time: DateTime<Utc>,
-    pub data_start_time: DateTime<Utc>,
-    pub data_end_time: DateTime<Utc>,
-    pub candles: Candles,
+    // pub data_start_time: DateTime<Utc>,
+    // pub data_end_time: DateTime<Utc>,
+    pub candles: Arc<Box<Candles>>,
 
-    pub loading_data_start_time: Option<DateTime<Utc>>,
-    pub loading_data_end_time: Option<DateTime<Utc>>,
-    pub is_loading_data: bool,
+    pub loading_data_time: Option<(DateTime<Utc>, DateTime<Utc>)>,
+    // pub loading_data_end_time: Option<DateTime<Utc>>,
+    // pub is_loading_data: bool,
 }
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct CandlesNewChunkEvent {
-    pub state: Rc<CandleDisplayDataSourceState>,
-    pub from_time: DateTime<Utc>,
-    pub to_time: DateTime<Utc>,
+    pub old_state: Arc<CandleDisplayDataSourceState>,
+    pub new_state: Arc<CandleDisplayDataSourceState>,
+    pub new_candle_index: usize,
+}
+
+pub struct CandlesCandlesUpdatedEvent {
+    pub old_state: Arc<CandleDisplayDataSourceState>,
+    pub new_state: Arc<CandleDisplayDataSourceState>,
+    pub candle_index: usize,
 }
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct DisplayTimeRangeChangedEvent {
-    pub state: Rc<CandleDisplayDataSourceState>,
+    pub old_state: Arc<CandleDisplayDataSourceState>,
+    pub new_state: Arc<CandleDisplayDataSourceState>,
     pub from_time: DateTime<Utc>,
     pub to_time: DateTime<Utc>,
 }
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct CandleUpdatedEvent {
-    pub state: Rc<CandleDisplayDataSourceState>,
+    pub old_state: Arc<CandleDisplayDataSourceState>,
+    pub new_state: Arc<CandleDisplayDataSourceState>,
     pub index: usize,
 }
 
@@ -105,8 +113,9 @@ pub trait CandleDisplayDataSource {
     // fn get_display_data(self) -> CandleData<'static>;
 }
 
-#[derive(Clone, PartialEq, PartialOrd, Debug)]
+#[derive(Clone, PartialEq, PartialOrd, Debug, Default)]
 pub struct Candles {
+    // DESC order
     pub close_time: Vec<DateTime<Utc>>,
     pub open: Vec<f64>,
     pub high: Vec<f64>,
@@ -114,6 +123,26 @@ pub struct Candles {
     pub close: Vec<f64>,
     pub volume: Vec<Option<f64>>,
     pub trade_count: Vec<Option<f64>>,
+}
+
+impl Candles {
+    #[inline]
+    pub fn get_last_close_time(&self) -> Option<DateTime<Utc>> {
+        if self.close_time.len() > 0 {
+            Some(self.close_time[0])
+        } else {
+            None
+        }
+    }
+
+    #[inline]
+    pub fn get_oldest_close_time(&self) -> Option<DateTime<Utc>> {
+        if self.close_time.len() > 0 {
+            Some(self.close_time[self.close_time.len() - 1])
+        } else {
+            None
+        }
+    }
 }
 
 // Test, generate candle data source

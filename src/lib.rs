@@ -3,7 +3,7 @@
 mod test_helper;
 
 mod core;
-mod controls;
+pub mod controls;
 
 pub mod errors;
 pub mod event_listener;

@@ -14,3 +14,10 @@ futures = "0.3"
 plotters = "*"
 event-listener="^4.0.3"
 tokio = { version = "1", features = ["full"] }
+
+[dependencies.redux-rs]
+version = "0.3.3"
+features = [
+    "middleware_logger",
+    "middleware_thunk"
+]

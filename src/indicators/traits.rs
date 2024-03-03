@@ -2,10 +2,12 @@ use std::{rc::Rc, sync::mpsc};
 
 use chrono::{DateTime, Utc};
 
+use crate::Reset;
+
 pub trait Indicator {
     type InputType: Clone;
     type OutputType: Clone;
-    type StateType;
+    type StateType: Clone + Reset;
 
     // fn new_state(&self) -> Rc<Self::StateType>;
     fn next(
@@ -23,7 +25,7 @@ pub struct IndicatorContainer<T: Indicator> {
 
 // Contains the value of TA
 // and their time range
-struct TATimeAware<T: Indicator> {
+pub struct TATimeAware<T: Indicator> {
     state: Rc<T::StateType>,
     values: Vec<T::OutputType>,
     timestamp: Vec<DateTime<Utc>>,

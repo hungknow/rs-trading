@@ -1,6 +1,6 @@
 // map from symbol to filepath
 
-use std::{collections::HashMap, sync::Arc};
+use std::{collections::HashMap, rc::Rc, sync::Arc};
 
 use chrono::{DateTime, Utc};
 
@@ -40,7 +40,28 @@ impl CandleCSVDataSource {
         // self.events.subscribe(event_name.id(), event);
     }
 
-    pub fn set_display_range(from_time: DateTime<Utc>, to_time: DateTime<Utc>) -> Result<bool, CandleDisplayDataSourceError> {
+    pub fn set_display_range(
+        from_time: DateTime<Utc>,
+        to_time: DateTime<Utc>,
+    ) -> Result<bool, CandleDisplayDataSourceError> {
+        todo!()
+    }
+
+    pub fn get_event_rx_channel(
+        &self,
+    ) -> std::sync::mpsc::Receiver<Arc<CandleDisplayDataSourceEvent>> {
+        todo!()
+    }
+
+    pub fn get_state(&self) -> Arc<CandleDisplayDataSourceState> {
+        todo!()
+    }
+
+    pub fn set_data_time_range(
+        &self,
+        start_time: DateTime<Utc>,
+        end_time: DateTime<Utc>,
+    ) -> Result<bool, CandleDisplayDataSourceError> {
         todo!()
     }
 }
