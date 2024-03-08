@@ -1,0 +1,28 @@
+[package]
+name = "hk-redux-rs"
+version = "0.1.0"
+edition = "2021"
+
+[features]
+default = []
+full = [ "middleware_logger", "middleware_thunk" ]
+middleware_logger = [ "log" ]
+middleware_thunk = []
+example_logger_middleware_dependencies = [ "middleware_logger", "env_logger" ]
+example_thunk_middleware_dependencies = [ "middleware_thunk" ]
+
+[dependencies]
+async-trait = "0.1.77"
+env_logger = { version = "0.11.2", optional = true }
+log = { version = "0.4", optional = true }
+tokio = { version = "1", features = [ "sync", "rt" ] }
+
+[dev-dependencies]
+tokio = { version = "1", features = [ "sync", "rt", "rt-multi-thread", "time", "macros" ] }
+
+[dependencies.redux-rs]
+version = "0.3.3"
+features = [
+    "middleware_logger",
+    "middleware_thunk"
+]

@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Copy, Clone, PartialEq, PartialOrd, Debug, Deserialize, Serialize)]
 pub struct Candle {
-    pub close_time: DateTime<Utc>,
+    pub open_time: DateTime<Utc>,
     pub open: f64,
     pub high: f64,
     pub low: f64,

@@ -10,3 +10,10 @@ pub struct IndicatorContainer<T: Indicator> {
     pub output: Vec<T::OutputType>,
     pub timestamp: Vec<DateTime<Utc>>,
 }
+
+#[derive(Clone, Default, PartialEq, Debug)]
+pub struct IndicatorData<T: Indicator> {
+    pub state: Arc<T::StateType>,
+    pub output: Vec<T::OutputType>,
+    pub timestamp: Vec<DateTime<Utc>>,
+}

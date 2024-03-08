@@ -1,0 +1,3 @@
+[workspace]
+members = ["hk-redux-rs", "rstrading", "web_chart"]
+resolver = "2"

@@ -5,7 +5,7 @@ use std::fmt;
 
 use super::traits::Indicator;
 
-#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, Serialize, Deserialize, Default)]
 pub struct ExponentialMovingAverageState {
     period: usize,
     k: f64,

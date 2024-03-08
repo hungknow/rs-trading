@@ -1,16 +1,44 @@
-use std::{rc::Rc, sync::Arc};
+use std::sync::Arc;
 
 use chrono::{DateTime, Utc};
 
-use crate::core::Identifier;
+use super::Candle;
 
-#[derive(Clone, Eq, PartialEq, Debug, Hash)]
+#[derive(Clone, Eq, PartialEq, Debug, Hash, Default)]
 pub enum Resolution {
+    #[default]
     M1,
     M5,
     M15,
     H1,
     H4,
+}
+
+impl Resolution {
+    pub fn to_seconds(&self) -> i64 {
+        match self {
+            Resolution::M1 => 60,
+            Resolution::M5 => 300,
+            Resolution::M15 => 900,
+            Resolution::H1 => 3600,
+            Resolution::H4 => 14400,
+        }
+    }
+
+    pub fn to_milliseconds(&self) -> i64 {
+        self.to_seconds() * 1000
+    }
+
+    pub fn from_seconds(seconds: i64) -> Option<Resolution> {
+        match seconds {
+            60 => Some(Resolution::M1),
+            300 => Some(Resolution::M5),
+            900 => Some(Resolution::M15),
+            3600 => Some(Resolution::H1),
+            14400 => Some(Resolution::H4),
+            _ => None,
+        }
+    }
 }
 
 pub struct DataSourceMeta {
@@ -116,7 +144,7 @@ pub trait CandleDisplayDataSource {
 #[derive(Clone, PartialEq, PartialOrd, Debug, Default)]
 pub struct Candles {
     // DESC order
-    pub close_time: Vec<DateTime<Utc>>,
+    pub open_time: Vec<DateTime<Utc>>,
     pub open: Vec<f64>,
     pub high: Vec<f64>,
     pub low: Vec<f64>,
@@ -126,10 +154,32 @@ pub struct Candles {
 }
 
 impl Candles {
+    pub fn new() -> Candles {
+        Candles {
+            open_time: vec![],
+            open: vec![],
+            high: vec![],
+            low: vec![],
+            close: vec![],
+            volume: vec![],
+            trade_count: vec![],
+        }
+    }
+
+    pub fn push_candle(&mut self, candle: &Candle) {
+        self.open_time.push(candle.open_time);
+        self.open.push(candle.open);
+        self.high.push(candle.high);
+        self.low.push(candle.low);
+        self.close.push(candle.close);
+        self.volume.push(candle.volume);
+        self.trade_count.push(candle.trade_count);
+    }
+
     #[inline]
     pub fn get_last_close_time(&self) -> Option<DateTime<Utc>> {
-        if self.close_time.len() > 0 {
-            Some(self.close_time[0])
+        if self.open_time.len() > 0 {
+            Some(self.open_time[0])
         } else {
             None
         }
@@ -137,8 +187,8 @@ impl Candles {
 
     #[inline]
     pub fn get_oldest_close_time(&self) -> Option<DateTime<Utc>> {
-        if self.close_time.len() > 0 {
-            Some(self.close_time[self.close_time.len() - 1])
+        if self.open_time.len() > 0 {
+            Some(self.open_time[self.open_time.len() - 1])
         } else {
             None
         }
@@ -163,7 +213,7 @@ mod tests {
         let close_time = vec![Utc::now(), Utc::now(), Utc::now(), Utc::now(), Utc::now()];
 
         let candle_data_source = Candles {
-            close_time,
+            open_time: close_time,
             open,
             high,
             low,
