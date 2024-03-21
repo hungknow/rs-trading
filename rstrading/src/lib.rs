@@ -6,7 +6,7 @@ mod core;
 pub mod controls;
 
 pub mod errors;
-pub mod event_listener;
+// pub mod event_listener;
 pub mod indicators;
 pub mod strategies;
 

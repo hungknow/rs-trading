@@ -2,7 +2,6 @@ use std::ops::Add;
 
 use crate::data::Resolution;
 use chrono::{DateTime, Duration, Utc};
-use hk_redux_rs::Selector;
 
 #[derive(Clone, Default)]
 pub struct CandleReplayModel {
@@ -19,24 +18,24 @@ pub enum CandleReplayAction {
 }
 
 pub struct CandleReplayReducer{}
-impl hk_redux_rs::Reducer<CandleReplayModel, CandleReplayAction> for CandleReplayReducer {
-    fn reduce(&self, model: CandleReplayModel, action: CandleReplayAction) -> CandleReplayModel {
-        match action {
-            CandleReplayAction::SetData(resolution, from_timestamp, to_timestamp) => CandleReplayModel {
-                resolution,
-                display_from_timestamp: from_timestamp,
-                display_to_timestamp: to_timestamp,
-                ..model
-            },
-            CandleReplayAction::NextBar => CandleReplayModel {
-                display_from_timestamp: model
-                    .display_from_timestamp
-                    .add(Duration::seconds(model.resolution.to_seconds())),
-                ..model
-            },
-        }
-    }
-}
+// impl hk_redux_rs::Reducer<CandleReplayModel, CandleReplayAction> for CandleReplayReducer {
+//     fn reduce(&self, model: CandleReplayModel, action: CandleReplayAction) -> CandleReplayModel {
+//         match action {
+//             CandleReplayAction::SetData(resolution, from_timestamp, to_timestamp) => CandleReplayModel {
+//                 resolution,
+//                 display_from_timestamp: from_timestamp,
+//                 display_to_timestamp: to_timestamp,
+//                 ..model
+//             },
+//             CandleReplayAction::NextBar => CandleReplayModel {
+//                 display_from_timestamp: model
+//                     .display_from_timestamp
+//                     .add(Duration::seconds(model.resolution.to_seconds())),
+//                 ..model
+//             },
+//         }
+//     }
+// }
 
 // pub type CandleReplayStore = StoreWithMiddleware<hk_redux_rs::Store<CandleReplayModel, CandleReplayAction, CandleReplayReducer>>;
 
@@ -72,18 +71,3 @@ pub fn candle_replay_select_display_to_timestamp(model: &CandleReplayModel) -> D
 //     model.candles.clone()
 // }
 
-// pub struct CandleReplayCandleSelector {}
-// impl Selector<CandleReplayModel> for CandleReplayCandleSelector {
-//     type Result = Arc<Box<Candles>>;
-//     fn select(&self, state: &CandleReplayModel) -> Self::Result {
-//         state.candles.clone()
-//     }
-// }
-
-pub struct CandleReplayDisplayToTimestampSelector {}
-impl Selector<CandleReplayModel> for CandleReplayDisplayToTimestampSelector {
-    type Result = DateTime<Utc>;
-    fn select(&self, state: &CandleReplayModel) -> Self::Result {
-        state.display_to_timestamp
-    }
-}

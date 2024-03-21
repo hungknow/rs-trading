@@ -9,5 +9,5 @@ pub use middleware::{MiddleWare, StoreApi, StoreWithMiddleware};
 pub use reducer::Reducer;
 pub use selector::Selector;
 pub use store::Store;
-pub use subscriber::Subscriber;
+// pub use subscriber::Subscriber;
 
