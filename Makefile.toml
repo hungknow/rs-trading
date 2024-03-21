@@ -1,0 +1,19 @@
+#https://github.com/sagiegurari/cargo-make
+
+extend = [
+  { path = "scripts/makefile/web.toml" },
+]
+
+[config]
+on_error_task = "catch"
+
+[tasks.catch]
+run_task = { name = ["restore-crate-type"] }
+
+[env]
+RUST_LOG = "info"
+CARGO_PROFILE = "dev"
+CARGO_MAKE_EXTEND_WORKSPACE_MAKEFILE = true
+CRATE_TYPE = "staticlib"
+LIB_EXT = "a"
+APP_ENVIRONMENT = "local"

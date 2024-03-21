@@ -1,0 +1,17 @@
+[tasks.wasm_build]
+script_runner = "bash"
+script = [
+    """
+    #!/bin/bash
+    BASE_DIR=$(pwd)
+    crates=( "rstrading" )
+
+    # Iterate over each crate and build it
+    for crate in "${crates[@]}"; do
+      echo "🔥🔥🔥  Building $crate with wasm-pack..."
+      cd "$BASE_DIR/rust-lib/$crate" || { echo "Failed to enter directory $crate"; exit 1; }
+
+      wasm-pack build || { echo "Build failed for $crate"; exit 1; }
+    done
+    """
+]
