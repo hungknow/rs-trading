@@ -58,7 +58,7 @@ impl CandleCSVDataSource {
         for result in reader.records() {
             let record = result.map_err(|e| TaError::CsvError(e))?;
             // record.
-            let candle: Candle = self.parse_string_record(record)?;
+            let candle: Candle = CandleCSVDataSource::parse_string_record(record)?;
             candles.push_candle(&candle);
 
             if limit > 0 && candles.open_time.len() as i64 >= limit {
@@ -77,7 +77,7 @@ impl CandleCSVDataSource {
     }
 
     #[inline]
-    fn parse_string_record(&self, record: StringRecord) -> Result<Candle, TaError> {
+    fn parse_string_record(record: StringRecord) -> Result<Candle, TaError> {
         let csv_missing_row = || TaError::CsvMissingColumn(format!("missing in {:?}", record));
 
         // Parse each column
