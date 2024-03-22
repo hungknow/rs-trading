@@ -115,15 +115,15 @@ impl CandleCSVDataSource {
     }
 }
 
-impl CandleDataSource for CandleCSVDataSource {
-    fn get_metadata(self) -> Vec<DataSourceMeta> {
-        todo!()
-    }
+// impl CandleDataSource for CandleCSVDataSource {
+//     fn get_metadata(self) -> Vec<DataSourceMeta> {
+//         todo!()
+//     }
 
-    fn get_data_source_from<'a>(&self, option: super::DataSourceGet) -> super::Candles {
-        todo!()
-    }
-}
+//     fn get_data_source_from(&self, option: super::DataSourceGet) -> super::Candles {
+//         todo!()
+//     }
+// }
 
 #[cfg(test)]
 mod test {

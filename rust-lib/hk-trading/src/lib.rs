@@ -1,7 +1,6 @@
 #[cfg(test)]
 #[macro_use]
 mod test_helper;
-
 mod core;
 pub mod controls;
 

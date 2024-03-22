@@ -1,6 +1,9 @@
+use async_trait::async_trait;
 use std::sync::Arc;
 
 use chrono::{DateTime, Utc};
+
+use crate::errors::TaError;
 
 use super::Candle;
 
@@ -10,8 +13,11 @@ pub enum Resolution {
     M1,
     M5,
     M15,
+    M30,
     H1,
     H4,
+    D1,
+    W1,
 }
 
 impl Resolution {
@@ -20,8 +26,11 @@ impl Resolution {
             Resolution::M1 => 60,
             Resolution::M5 => 300,
             Resolution::M15 => 900,
+            Resolution::M30 => 1800,
             Resolution::H1 => 3600,
             Resolution::H4 => 14400,
+            Resolution::D1 => 86400,
+            Resolution::W1 => 604800,
         }
     }
 
@@ -34,8 +43,11 @@ impl Resolution {
             60 => Some(Resolution::M1),
             300 => Some(Resolution::M5),
             900 => Some(Resolution::M15),
+            1800 => Some(Resolution::M30),
             3600 => Some(Resolution::H1),
             14400 => Some(Resolution::H4),
+            86400 => Some(Resolution::D1),
+            604800 => Some(Resolution::W1),
             _ => None,
         }
     }
@@ -49,16 +61,17 @@ pub struct DataSourceMeta {
     pub end_time: DateTime<Utc>,
 }
 
-pub struct DataSourceGet {
-    pub symbol: String,
+pub struct DataSourceGet<'a> {
+    pub symbol: &'a str,
     pub resolution: Resolution,
     pub start_time: DateTime<Utc>,
-    pub end_time: DateTime<Utc>,
+    pub end_time: Option<DateTime<Utc>>,
 }
 
+#[async_trait]
 pub trait CandleDataSource {
     fn get_metadata(self) -> Vec<DataSourceMeta>;
-    fn get_data_source_from<'a>(&self, option: DataSourceGet) -> Candles;
+    async fn get_data_source_from<'a>(&self, option: DataSourceGet<'a>) -> Result<Candles, TaError> ;
     // fn register_vent(&self, sender mpsc::Sender<CandleDisplayDataSourceEvent>);
 }
 

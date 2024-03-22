@@ -6,10 +6,12 @@ pub use candle::*;
 
 mod data_source;
 pub use data_source::*;
-mod csv_data_source;
-pub use csv_data_source::*;
+// mod csv_data_source;
+// pub use csv_data_source::*;
 
 pub mod historical;
+mod hk_trading_candles_data_source;
+pub use hk_trading_candles_data_source::*;
 pub mod traits;
 
 /// Metadata detailing the Candle or Trade.
