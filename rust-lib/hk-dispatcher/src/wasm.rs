@@ -2,8 +2,7 @@ use std::any::Any;
 
 use protobuf::Message;
 use tracing::info;
-use wasm_bindgen::prelude::wasm_bindgen;
-use wasm_bindgen::JsValue;
+use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::{future_to_promise, js_sys};
 
 use crate::protos::ffi_request::FFIRequest;
