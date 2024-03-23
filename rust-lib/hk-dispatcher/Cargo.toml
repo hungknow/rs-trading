@@ -1,0 +1,18 @@
+[package]
+name = "hk-dispatcher"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+tracing.workspace = true
+wasm-bindgen.workspace = true
+wasm-bindgen-futures.workspace = true
+protobuf.workspace = true
+
+[build-dependencies]
+protobuf-codegen.workspace = true
