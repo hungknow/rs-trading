@@ -1,16 +1,17 @@
-pub type Result<T> = std::result::Result<T, TaError>;
+pub type Result<T> = std::result::Result<T, HkError>;
 
 #[derive(Debug)]
-pub enum TaError {
+pub enum HkError {
     InvalidParameter,
     CsvError(csv::Error),
     CsvMissingColumn(String),
     HkTradingError(hktrading_client::types::HkError),
+    HkDataError(String),
     UnknownError(String),
 }
 
-impl From<csv::Error> for TaError {
+impl From<csv::Error> for HkError {
     fn from(e: csv::Error) -> Self {
-        TaError::CsvError(e)
+        HkError::CsvError(e)
     }
 }

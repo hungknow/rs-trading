@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::errors::TaError;
+use crate::errors::HkError;
 use chrono::{NaiveDateTime, TimeZone, Utc};
 use hktrading_client::types::SymbolTicker;
 
@@ -28,7 +28,7 @@ impl HkTradingCandleDataSource {
     async fn get_data_source_from<'a>(
         &self,
         option: super::DataSourceGet<'a>,
-    ) -> Result<super::Candles, TaError> {
+    ) -> Result<super::Candles, HkError> {
         let candles_response = self
             .hk_trading_client
             .get_candles(
@@ -48,22 +48,19 @@ impl HkTradingCandleDataSource {
 
 impl From<hktrading_client::types::Candles> for super::Candles {
     fn from(candles: hktrading_client::types::Candles) -> super::Candles {
-        Self {
-            open: candles.opens,
-            high: candles.highs,
-            low: candles.lows,
-            close: candles.closes,
-            volume: candles.vols.iter().map(|v| Some(*v as f64)).collect(),
-            open_time: candles
-                .times
-                .iter()
-                .map(|t| {
-                    let dt: NaiveDateTime = NaiveDateTime::from_timestamp_opt(*t, 0).unwrap();
-                    Utc.from_utc_datetime(&dt)
-                })
-                .collect(),
-            trade_count: vec![],
-        }
+        let mut c = super::Candles::new();
+        c.set_volumes(candles.vols.iter().map(|v| Some(*v as f64)).collect())
+            .set_open_times(
+                candles
+                    .times
+                    .iter()
+                    .map(|t| {
+                        let dt: NaiveDateTime = NaiveDateTime::from_timestamp_opt(*t, 0).unwrap();
+                        Utc.from_utc_datetime(&dt)
+                    })
+                    .collect(),
+            );
+        c
     }
 }
 
@@ -82,21 +79,21 @@ impl From<crate::data::Resolution> for hktrading_client::types::Resolution {
     }
 }
 
-impl From<hktrading_client::Error<hktrading_client::types::HkError>> for TaError {
+impl From<hktrading_client::Error<hktrading_client::types::HkError>> for HkError {
     fn from(e: hktrading_client::Error<hktrading_client::types::HkError>) -> Self {
         match e {
-            hktrading_client::Error::InvalidRequest(e) => TaError::UnknownError(e),
-            hktrading_client::Error::CommunicationError(e) => TaError::UnknownError(e.to_string()),
-            hktrading_client::Error::InvalidUpgrade(e) => TaError::UnknownError(e.to_string()),
-            hktrading_client::Error::ErrorResponse(e) => TaError::HkTradingError(e.into_inner()),
-            hktrading_client::Error::ResponseBodyError(e) => TaError::UnknownError(e.to_string()),
+            hktrading_client::Error::InvalidRequest(e) => HkError::UnknownError(e),
+            hktrading_client::Error::CommunicationError(e) => HkError::UnknownError(e.to_string()),
+            hktrading_client::Error::InvalidUpgrade(e) => HkError::UnknownError(e.to_string()),
+            hktrading_client::Error::ErrorResponse(e) => HkError::HkTradingError(e.into_inner()),
+            hktrading_client::Error::ResponseBodyError(e) => HkError::UnknownError(e.to_string()),
             hktrading_client::Error::InvalidResponsePayload(_, e) => {
-                TaError::UnknownError(e.to_string())
+                HkError::UnknownError(e.to_string())
             }
             hktrading_client::Error::UnexpectedResponse(e) => {
-                TaError::UnknownError(e.status().to_string())
+                HkError::UnknownError(e.status().to_string())
             }
-            hktrading_client::Error::PreHookError(e) => TaError::UnknownError(e.to_string()),
+            hktrading_client::Error::PreHookError(e) => HkError::UnknownError(e.to_string()),
         }
     }
 }
@@ -107,7 +104,7 @@ mod tests {
 
     use chrono::{Duration, NaiveDateTime, TimeZone, Utc};
 
-    use crate::data::{CandleDataSource, DataSourceGet};
+    use crate::data::DataSourceGet;
 
     use super::HkTradingCandleDataSource;
 
@@ -126,8 +123,8 @@ mod tests {
             })
             .await
             .unwrap();
-        assert_eq!(candles.open_time.len(), 2);
+        assert_eq!(candles.open_times.len(), 2);
         // The first candle should be at 1654646400
-        assert_eq!(candles.open_time[0].timestamp(), 1654646400);
+        assert_eq!(candles.open_times[0].timestamp(), 1654646400);
     }
 }
