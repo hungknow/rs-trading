@@ -1,7 +1,9 @@
-use leptos::{component, view};
+use leptos::*;
+use leptos_meta::*;
+use web_chart::components::Chart;
 
 #[component]
-fn ChartContainer() -> impl View {
+fn ChartContainer() -> impl IntoView {
     view! {
         <div>
             <h1>"Chart"</h1>
@@ -10,8 +12,20 @@ fn ChartContainer() -> impl View {
     }
 }
 
+#[component]
+fn App() -> impl IntoView {
+    provide_meta_context();
+    let fallback = || view! { "Page not found." }.into_view();
+    view! {
+        // <Stylesheet id="leptos" href="/styles/bundle.css"/>
+        <ChartContainer />
+    }
+}
+
 fn main() {
     leptos::mount_to_body(|| {
-        view! { <ChartContainer /> }
+        view! {
+            <App />
+        }
     })
 }

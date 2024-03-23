@@ -18,6 +18,6 @@ csv = "1.3.0"
 hktrading-client = "0.0.7"
 async-trait = "0.1.78"
 
-[[example]]
-name = "candles_chart"
-crate-type = ["bin"]
+# [[example]]
+# name = "candles_chart"
+# crate-type = ["bin"]

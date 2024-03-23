@@ -5,6 +5,36 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+# [lib]
+# crate-type = ["cdylib", "rlib"]
+
 [dependencies]
 leptos = { version = "0.6.9", features = ["csr"] }
-rstrading = { path = "../rstrading" }
+wasm-bindgen.workspace = true
+wasm-bindgen-futures.workspace = true
+hk-trading = { path = "../hk-trading" }
+stylance = "0.3.0"
+leptos_meta = { version="0.6.9", features = ["csr"] }
+
+[package.metadata.leptos]
+output-name = "web_chart"
+site-root = "target/site"
+site-pkg-dir = "pkg"
+assets-dir = "assets"
+style-file = "./styles/bundle.css"
+
+[package.metadata.stylance]
+# When set, stylance-cli will bundle all css module files
+# into by concatenating them and put the result in this file.
+output_file = "./styles/bundle.css"
+
+# output_dir
+# When set, stylance-cli will create a folder named "stylance" inside
+# the output_dir directory.
+# The stylance folder will be populated with one file per detected css module
+# and one _all.scss file that contains one `@use "file.module-hash.scss";` statement
+# per module file.
+# You can use that file to import all your modules into your main scss project.
+output_dir = "./styles/"
+
+extensions = [".module.scss", ".module.css"]

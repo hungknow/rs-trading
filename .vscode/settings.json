@@ -1,7 +1,3 @@
 {
-    "rust-analyzer.linkedProjects": [
-        "./rust-lib/hk-dispatcher/Cargo.toml",
-        "./rust-lib/hk-trading/Cargo.toml"
-    ],
-    "rust-analyzer.cargo.features": ["wasm32"]
+  "rust-analyzer.linkedProjects": ["./rust-lib/Cargo.toml"]
 }

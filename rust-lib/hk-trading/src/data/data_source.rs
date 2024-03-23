@@ -68,11 +68,10 @@ pub struct DataSourceGet<'a> {
     pub end_time: Option<DateTime<Utc>>,
 }
 
-#[async_trait]
+// #[async_trait]
 pub trait CandleDataSource {
-    fn get_metadata(self) -> Vec<DataSourceMeta>;
-    async fn get_data_source_from<'a>(&self, option: DataSourceGet<'a>) -> Result<Candles, TaError> ;
-    // fn register_vent(&self, sender mpsc::Sender<CandleDisplayDataSourceEvent>);
+    // fn get_metadata(self) -> Vec<DataSourceMeta>;
+    fn get_data_source_from<'a>(&self, option: DataSourceGet<'a>) -> impl futures::Future<Output=Result<Candles, TaError>> ;
 }
 
 #[derive(Clone, PartialEq, Debug)]

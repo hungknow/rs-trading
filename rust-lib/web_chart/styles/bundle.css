@@ -1,0 +1,21 @@
+.chart-controls-df77297 {
+    display: flex;
+    
+}
+.chart-controls-df77297 label {
+    /* Align the text in the middle of the label */
+    display: flex;
+    align-items: center;
+}
+
+.resolution_buttons-df77297 {
+    display: flex;
+}
+
+.resolution_buttons-df77297 > span {
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    margin-left: 4px;
+    margin-right: 4px;
+}

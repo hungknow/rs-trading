@@ -10,7 +10,7 @@ pub use select::Select;
 pub use subscribe::Subscribe;
 pub use work::Work;
 
-use crate::{Reducer, Selector, Subscriber};
+use crate::{Reducer, Selector};
 use async_trait::async_trait;
 use work::HandleWork;
 

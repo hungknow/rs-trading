@@ -1,7 +1,6 @@
 use std::sync::Arc;
 
 use crate::errors::TaError;
-use async_trait::async_trait;
 use chrono::{NaiveDateTime, TimeZone, Utc};
 use hktrading_client::types::SymbolTicker;
 
@@ -19,8 +18,9 @@ impl HkTradingCandleDataSource {
     }
 }
 
-#[async_trait]
-impl CandleDataSource for HkTradingCandleDataSource {
+// #[async_trait]
+// impl CandleDataSource for HkTradingCandleDataSource {
+impl HkTradingCandleDataSource {
     fn get_metadata(self) -> Vec<super::DataSourceMeta> {
         todo!()
     }

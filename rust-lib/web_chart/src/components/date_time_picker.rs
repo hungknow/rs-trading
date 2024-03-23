@@ -1,15 +1,9 @@
-// https://docs.rs/leptos_element_plus/latest/src/leptos_element_plus/components/el_date_time_picker.rs.html
+// pub use super::common::Size;
 
-use js_sys::Date;
-//use wasm_bindgen::prelude::*;
-use wasm_bindgen::{JsValue, closure::Closure};
-use js_sys::{Array/*,Object,Reflect*/};
-//use serde::{Serialize,Deserialize,de::DeserializeOwned};
-//use serde_wasm_bindgen::from_value;
-pub use super::common::Size;
+use leptos::{component, view, IntoView};
 
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Type{
+pub enum Type {
     Year,
     Month,
     Date,
@@ -18,10 +12,9 @@ pub enum Type{
     Week,
 }
 
-
-pub fn DateTimePicker() {
-    
+#[component]
+pub fn DateTimePicker() -> impl IntoView {
     view! {
-
+        <div></div>
     }
 }

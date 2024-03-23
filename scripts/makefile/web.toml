@@ -4,7 +4,7 @@ script = [
     """
     #!/bin/bash
     BASE_DIR=$(pwd)
-    crates=( "rstrading" )
+    crates=( "hk-trading" )
 
     # Iterate over each crate and build it
     for crate in "${crates[@]}"; do
@@ -15,3 +15,16 @@ script = [
     done
     """
 ]
+
+[tasks.web-chart-start]
+script_runner = "bash"
+script = '''
+cd rust-lib/web_chart
+trunk serve --open
+'''
+
+[tasks.web-chart-css]
+script = '''
+cd rust-lib/web_chart
+stylance --watch --output-file ./styles/bundle.css . 
+'''
