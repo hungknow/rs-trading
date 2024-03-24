@@ -32,7 +32,7 @@ impl HkTradingCandleDataSource {
         let candles_response = self
             .hk_trading_client
             .get_candles(
-                option.start_time.timestamp(),
+                Some(option.start_time.timestamp()),
                 option.resolution.into(),
                 SymbolTicker::MockXauusd,
                 option.end_time.map(|t| t.timestamp()),
@@ -85,7 +85,9 @@ impl From<hktrading_client::Error<hktrading_client::types::HkError>> for HkError
             hktrading_client::Error::InvalidRequest(e) => HkError::UnknownError(e),
             hktrading_client::Error::CommunicationError(e) => HkError::UnknownError(e.to_string()),
             hktrading_client::Error::InvalidUpgrade(e) => HkError::UnknownError(e.to_string()),
-            hktrading_client::Error::ErrorResponse(e) => HkError::HkTradingError(e.into_inner()),
+            hktrading_client::Error::ErrorResponse(e) => {
+                HkError::HkServerError(e.code.unwrap(), e.message.as_deref().unwrap().to_string())
+            }
             hktrading_client::Error::ResponseBodyError(e) => HkError::UnknownError(e.to_string()),
             hktrading_client::Error::InvalidResponsePayload(_, e) => {
                 HkError::UnknownError(e.to_string())
