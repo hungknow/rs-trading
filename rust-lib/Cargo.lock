@@ -866,6 +866,7 @@ dependencies = [
  "chrono",
  "csv",
  "futures",
+ "hk-dispatcher",
  "hktrading-client",
  "plotters",
  "serde",
@@ -875,9 +876,9 @@ dependencies = [
 
 [[package]]
 name = "hktrading-client"
-version = "0.0.7"
+version = "0.0.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2972df7db19cfea61c81bb34768daca974857f30d759063274987ba47ce105ce"
+checksum = "25705e46b8f488b0bf65c9e013aeed4ffa48d565405ee65cad37f930b6f4bbde"
 dependencies = [
  "bytes",
  "futures-core",

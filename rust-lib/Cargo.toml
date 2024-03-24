@@ -8,3 +8,4 @@ wasm-bindgen = "0.2.92"
 wasm-bindgen-futures = "0.4.42"
 protobuf = { version = "3.4.0", features = ["with-bytes"] }
 protobuf-codegen = "3.4.0"
+hktrading-client = "0.0.8"
