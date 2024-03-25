@@ -1,5 +1,7 @@
 use std::{borrow::BorrowMut, cell::RefCell, ops::Deref, sync::Arc};
 
+use crate::errors::HkError;
+
 use super::Candles;
 
 pub struct OhlcOrderBlock {
@@ -10,13 +12,26 @@ pub struct OhlcOrderBlock {
 }
 
 impl OhlcOrderBlock {
-    pub fn merge_block(&mut self, candles: RefCell<Box<Candles>>) {
+    pub fn merge_block(&mut self, candles: RefCell<Box<Candles>>) -> Result<(), HkError> {
         self.ohlc_list.push(candles);
-        // Remove any empty block
+
+        let ohlc_time_desc = self.ohlc_list[0].borrow().time_desc();
+        if ohlc_time_desc == None {
+            return Err(HkError::HkDataError(
+                "failed to detect the time order for candles".to_owned(),
+            ));
+        }
+
+        let is_desc = ohlc_time_desc.unwrap();
 
         // Sort blocks so that the most recent one come first
-        self.ohlc_list
-            .sort_by(|a, b| a.borrow().open_times[0].cmp(&b.borrow().open_times[0]));
+        self.ohlc_list.sort_by(|a, b| {
+            if is_desc {
+                b.borrow().open_times[0].cmp(&a.borrow().open_times[0])
+            } else {
+                a.borrow().open_times[0].cmp(&b.borrow().open_times[0])
+            }
+        });
 
         // Merge adjacent blocks
         let mut i = 0;
@@ -50,7 +65,7 @@ impl OhlcOrderBlock {
                 // decide merge
                 let order = current_candles_end_at.cmp(&next_candles_start_at);
                 should_merge |= order == std::cmp::Ordering::Equal;
-                match current_candles.time_desc().unwrap() {
+                match ohlc_time_desc.unwrap() {
                     true => {
                         should_merge |= order == std::cmp::Ordering::Less;
                     }
@@ -106,6 +121,7 @@ impl OhlcOrderBlock {
                 self.ohlc_list.remove(should_remove as usize);
             }
         }
+        Ok(())
     }
 }
 
@@ -116,7 +132,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_merge_block() {
+    fn test_merge_block_asc_order() {
         let mut block = OhlcOrderBlock {
             ohlc_list: Vec::new(),
         };
@@ -187,5 +203,79 @@ mod tests {
         assert_eq!(block.ohlc_list[0].borrow().open_times.len(), 8);
         // Check if the same candle is updated with the new candle
         assert_eq!(block.ohlc_list[0].borrow().closes[5], 5.0);
+    }
+
+    #[test]
+    fn test_merge_block_desc_order() {
+        let mut block = OhlcOrderBlock {
+            ohlc_list: Vec::new(),
+        };
+        let data = vec![
+            (8, 1.0, 2.0, 3.0, 4.0, Some(1.0)),
+            (7, 1.0, 2.0, 3.0, 4.0, Some(1.0)),
+            (6, 1.0, 2.0, 3.0, 5.0, Some(1.0)),
+            (5, 1.0, 2.0, 3.0, 4.0, Some(1.0)),
+            (4, 1.0, 2.0, 3.0, 4.0, Some(1.0)),
+            (3, 1.0, 2.0, 3.0, 5.0, Some(1.0)),
+            // The opentime overlap with the last candle
+            (3, 1.0, 2.0, 3.0, 10.0, Some(1.0)),
+            (2, 1.0, 2.0, 3.0, 4.0, Some(1.0)),
+            (1, 1.0, 2.0, 3.0, 4.0, Some(1.0)),
+        ];
+
+        let mut candles = Box::new(Candles::new());
+        for i in 0..3 {
+            candles
+                .push_data_non_overlapped(
+                    convert_i64_to_datetime_utc(data[i].0),
+                    data[i].1,
+                    data[i].2,
+                    data[i].3,
+                    data[i].4,
+                    data[i].5,
+                )
+                .unwrap();
+        }
+
+        block.merge_block(RefCell::new(candles));
+        assert_eq!(block.ohlc_list.len(), 1);
+        assert_eq!(block.ohlc_list[0].borrow().open_times.len(), 3);
+
+        let mut candles = Box::new(Candles::new());
+        for i in 3..6 {
+            candles
+                .push_data_non_overlapped(
+                    convert_i64_to_datetime_utc(data[i].0),
+                    data[i].1,
+                    data[i].2,
+                    data[i].3,
+                    data[i].4,
+                    data[i].5,
+                )
+                .unwrap();
+        }
+
+        block.merge_block(RefCell::new(candles));
+        assert_eq!(block.ohlc_list.len(), 1);
+        assert_eq!(block.ohlc_list[0].borrow().open_times.len(), 6);
+
+        let mut candles = Box::new(Candles::new());
+        for i in 6..9 {
+            candles
+                .push_data_non_overlapped(
+                    convert_i64_to_datetime_utc(data[i].0),
+                    data[i].1,
+                    data[i].2,
+                    data[i].3,
+                    data[i].4,
+                    data[i].5,
+                )
+                .unwrap();
+        }
+        block.merge_block(RefCell::new(candles));
+        assert_eq!(block.ohlc_list.len(), 1);
+        assert_eq!(block.ohlc_list[0].borrow().open_times.len(), 8);
+        // Check if the same candle is updated with the new candle
+        assert_eq!(block.ohlc_list[0].borrow().closes[5], 10.0);
     }
 }
