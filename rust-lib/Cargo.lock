@@ -2608,7 +2608,9 @@ name = "web_chart"
 version = "0.1.0"
 dependencies = [
  "charming",
+ "chrono",
  "hk-trading",
+ "hktrading-client",
  "leptos",
  "leptos_meta",
  "serde_json",

@@ -1,5 +1,3 @@
-use std::f32::consts::E;
-
 use chrono::DateTime;
 use hk_trading::data::{
     datafeed_service::{OhlcFeedService, OhlcFeedServiceImpl},

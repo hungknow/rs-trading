@@ -1,3 +1,5 @@
+use std::cmp::Ordering;
+
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
@@ -31,7 +33,7 @@ pub struct Candles {
     pub lows: Vec<f64>,
     pub closes: Vec<f64>,
     pub volumes: Vec<Option<f64>>,
-    pub trade_count: Vec<Option<f64>>,
+    // pub trade_count: Vec<Option<f64>>,
     // the time of candle
     time_desc: Option<bool>,
     resolution: Option<Resolution>,
@@ -46,7 +48,7 @@ impl Candles {
             lows: vec![],
             closes: vec![],
             volumes: vec![],
-            trade_count: vec![],
+            // trade_count: vec![],
             time_desc: None,
             resolution: None,
         }
@@ -113,23 +115,53 @@ impl Candles {
     // Add a new candle to the data source
     // if the open_time of the candle is far from the last open_time, return error
     pub fn push_candle(&mut self, candle: &Candle) -> Result<&mut Self, HkError> {
+        self.push_data_overlapped(
+            candle.open_time,
+            candle.open,
+            candle.high,
+            candle.low,
+            candle.close,
+            candle.volume,
+        )
+    }
+
+    pub fn push_data_non_overlapped(
+        &mut self,
+        open_time: DateTime<Utc>,
+        open: f64,
+        high: f64,
+        low: f64,
+        close: f64,
+        volume: Option<f64>,
+    ) -> Result<&mut Self, HkError> {
+        self.detect_time_desc();
         // check open_time of the new candle is the continuous of the last candle
         match self.time_desc() {
             Some(true) => {
                 if self.open_times.len() > 0 {
                     let last_open_time = self.open_times[0];
-                    if last_open_time.timestamp_millis() - candle.open_time.timestamp_millis() != 0
-                    {
-                        return Err(HkError::InvalidParameter);
+                    if last_open_time.cmp(&open_time) != std::cmp::Ordering::Greater {
+                        return Err(HkError::HkDataError(
+                            format!(
+                                "The last open time {} is less than current time {}",
+                                last_open_time, open_time
+                            )
+                            .to_owned(),
+                        ));
                     }
                 }
             }
             Some(false) => {
                 if self.open_times.len() > 0 {
                     let last_open_time = self.open_times[self.open_times.len() - 1];
-                    if last_open_time.timestamp_millis() - candle.open_time.timestamp_millis() != 0
-                    {
-                        return Err(HkError::HkDataError("".to_owned()));
+                    if last_open_time.cmp(&open_time) != std::cmp::Ordering::Less {
+                        return Err(HkError::HkDataError(
+                            format!(
+                                "The last open time {} is less than current time {}",
+                                last_open_time, open_time
+                            )
+                            .to_owned(),
+                        ));
                     }
                 }
             }
@@ -141,17 +173,56 @@ impl Candles {
                 }
             }
         }
+        self.push_data(open_time, open, high, low, close, volume, None)
+    }
 
-        self.open_times.push(candle.open_time);
-        self.opens.push(candle.open);
-        self.highs.push(candle.high);
-        self.lows.push(candle.low);
-        self.closes.push(candle.close);
-        self.volumes.push(candle.volume);
-        self.trade_count.push(candle.trade_count);
+    pub fn push_data_overlapped(
+        &mut self,
+        open_time: DateTime<Utc>,
+        open: f64,
+        high: f64,
+        low: f64,
+        close: f64,
+        volume: Option<f64>,
+    ) -> Result<&mut Self, HkError> {
+        let existing_index = self
+            .open_times
+            .iter()
+            .position(|&r| r.cmp(&open_time) == Ordering::Equal);
 
-        self.detect_resolution();
-        self.detect_time_desc();
+        self.push_data(open_time, open, high, low, close, volume, existing_index)
+    }
+
+    fn push_data(
+        &mut self,
+        open_time: DateTime<Utc>,
+        open: f64,
+        high: f64,
+        low: f64,
+        close: f64,
+        volume: Option<f64>,
+        existing_index: Option<usize>,
+    ) -> Result<&mut Self, HkError> {
+        match existing_index {
+            Some(index) => {
+                self.opens[index] = open;
+                self.highs[index] = high;
+                self.lows[index] = low;
+                self.closes[index] = close;
+                self.volumes[index] = volume;
+            }
+            None => {
+                self.open_times.push(open_time);
+                self.opens.push(open);
+                self.highs.push(high);
+                self.lows.push(low);
+                self.closes.push(close);
+                self.volumes.push(volume);
+
+                self.detect_resolution();
+                self.detect_time_desc();
+            }
+        }
 
         Ok(self)
     }
@@ -188,7 +259,7 @@ mod tests {
         let low = vec![0.9, 1.9, 2.9, 3.9, 4.9];
         let close = vec![1.0, 2.0, 3.0, 4.0, 5.0];
         let volume = vec![Some(1.0), Some(2.0), Some(3.0), Some(4.0), Some(5.0)];
-        let trade_count = vec![Some(1.0), Some(2.0), Some(3.0), Some(4.0), Some(5.0)];
+        // let trade_count = vec![Some(1.0), Some(2.0), Some(3.0), Some(4.0), Some(5.0)];
         let close_time = vec![Utc::now(), Utc::now(), Utc::now(), Utc::now(), Utc::now()];
 
         let candle_data_source = Candles {
@@ -198,7 +269,7 @@ mod tests {
             lows: low,
             closes: close,
             volumes: volume,
-            trade_count,
+            // trade_count,
             time_desc: todo!(),
             resolution: todo!(),
         };

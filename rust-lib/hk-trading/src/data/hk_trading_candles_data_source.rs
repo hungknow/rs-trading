@@ -67,6 +67,7 @@ impl From<hktrading_client::types::Candles> for super::Candles {
 impl From<crate::data::Resolution> for hktrading_client::types::Resolution {
     fn from(resolution: crate::data::Resolution) -> Self {
         match resolution {
+            // crate::data::Resolution::S1 => hktrading_client::types::Resolution::M1,
             crate::data::Resolution::M1 => hktrading_client::types::Resolution::M1,
             crate::data::Resolution::M5 => hktrading_client::types::Resolution::M5,
             crate::data::Resolution::M15 => hktrading_client::types::Resolution::M15,
@@ -75,6 +76,7 @@ impl From<crate::data::Resolution> for hktrading_client::types::Resolution {
             crate::data::Resolution::H4 => hktrading_client::types::Resolution::H4,
             crate::data::Resolution::D1 => hktrading_client::types::Resolution::D1,
             crate::data::Resolution::W1 => hktrading_client::types::Resolution::W1,
+            _ => panic!("Unsupported resolution"),
         }
     }
 }

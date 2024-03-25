@@ -1,6 +1,8 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
+mod candle_block;
+pub use candle_block::*;
 mod candle;
 pub use candle::*;
 

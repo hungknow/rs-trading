@@ -1,7 +1,6 @@
-
-
 #[derive(Copy, Clone, Eq, PartialEq, PartialOrd, Debug, Hash, Default)]
 pub enum Resolution {
+    S1,
     #[default]
     M1,
     M5,
@@ -16,6 +15,7 @@ pub enum Resolution {
 impl Resolution {
     pub fn to_seconds(&self) -> i64 {
         match self {
+            Resolution::S1 => 1,
             Resolution::M1 => 60,
             Resolution::M5 => 300,
             Resolution::M15 => 900,
@@ -32,7 +32,8 @@ impl Resolution {
     }
 
     pub fn from_seconds(seconds: i64) -> Option<Resolution> {
-        match seconds {
+        match seconds.abs() {
+            1 => Some(Resolution::S1),
             60 => Some(Resolution::M1),
             300 => Some(Resolution::M5),
             900 => Some(Resolution::M15),
