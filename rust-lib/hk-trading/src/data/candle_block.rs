@@ -1,8 +1,8 @@
-use std::{borrow::BorrowMut, cell::RefCell, ops::Deref, sync::Arc};
-
-use crate::errors::HkError;
+use chrono::{DateTime, Utc};
 
 use super::Candles;
+use crate::errors::HkError;
+use std::cell::RefCell;
 
 pub struct OhlcOrderBlock {
     // pub order: Vec<i64>,
@@ -12,13 +12,40 @@ pub struct OhlcOrderBlock {
 }
 
 impl OhlcOrderBlock {
+    pub fn new() -> OhlcOrderBlock {
+        OhlcOrderBlock {
+            ohlc_list: Vec::new(),
+        }
+    }
+
+    // pub fn get_ohlc_by_time_range(
+    //     &self,
+    //     from_time: &DateTime<Utc>,
+    //     to_time: &DateTime<Utc>,
+    // ) -> Vec<Candles> {
+    //     let mut result = Vec::new();
+    //     for candles in &self.ohlc_list {
+    //         let candles = candles.borrow();
+    //         let from_time_cmp = candles.open_times[0].cmp(from_time);
+    //         let to_time_cmp = candles.open_times[candles.open_times.len() - 1].cmp(to_time);
+    //         if (from_time_cmp == std::cmp::Ordering::Greater
+    //             || from_time_cmp == std::cmp::Ordering::Equal)
+    //             && to_time_cmp == std::cmp::Ordering::Less
+    //         {
+    //             result.push(candles.clone());
+    //         }
+            
+    //     }
+    //     result
+    // }
+
     pub fn merge_block(&mut self, candles: RefCell<Box<Candles>>) -> Result<(), HkError> {
         self.ohlc_list.push(candles);
 
         let ohlc_time_desc = self.ohlc_list[0].borrow().time_desc();
         if ohlc_time_desc == None {
             return Err(HkError::HkDataError(
-                "failed to detect the time order for candles".to_owned(),
+                format!("merge_block: failed to detect the time order for candles").to_owned(),
             ));
         }
 
@@ -33,14 +60,15 @@ impl OhlcOrderBlock {
             }
         });
 
+        let resolution_seconds = self.ohlc_list[0]
+            .borrow()
+            .resolution()
+            .unwrap()
+            .to_seconds();
+
         // Merge adjacent blocks
         let mut i = 0;
         while i < self.ohlc_list.len() - 1 {
-            let resolution_seconds = self.ohlc_list[0]
-                .borrow()
-                .resolution()
-                .unwrap()
-                .to_seconds();
             let mut should_remove: i64 = -1;
 
             // Since we know the start of a is more recent than the start of b, they'll overlap if the last post in a is
@@ -88,28 +116,6 @@ impl OhlcOrderBlock {
                             )
                             .unwrap();
                     }
-
-                    // let mut merged_candles = Candles::new();
-                    // merged_candles.open_times = current_candles.open_times.clone();
-                    // merged_candles.opens = current_candles.opens.clone();
-                    // merged_candles.highs = current_candles.highs.clone();
-                    // merged_candles.lows = current_candles.lows.clone();
-                    // merged_candles.closes = current_candles.closes.clone();
-                    // merged_candles.volumes = current_candles.volumes.clone();
-
-                    // merged_candles
-                    //     .open_times
-                    //     .extend(next_candles.open_times.clone());
-                    // merged_candles.opens.extend(next_candles.opens.clone());
-                    // merged_candles.highs.extend(next_candles.highs.clone());
-                    // merged_candles.lows.extend(next_candles.lows.clone());
-                    // merged_candles.closes.extend(next_candles.closes.clone());
-                    // merged_candles.volumes.extend(next_candles.volumes.clone());
-
-                    // self.ohlc_list.remove(i + 1);
-
-                    // right.borrow_mut().de
-
                     // Do another iteration on this index since it may need to be merged into the next
                 } else {
                     // The blocks don't overlap, so move on to the next one

@@ -56,6 +56,8 @@ impl Candles {
 
     pub fn set_open_times(&mut self, open_times: Vec<DateTime<Utc>>) -> &mut Self {
         self.open_times = open_times;
+        self.detect_resolution();
+        self.detect_time_desc();
         self
     }
 
@@ -168,7 +170,7 @@ impl Candles {
             None => {
                 if self.open_times.len() >= 2 {
                     return Err(HkError::HkDataError(
-                        "failed to detect the time order for candles".to_owned(),
+                        "push_data_non_overlapped: failed to detect the time order for candles".to_owned(),
                     ));
                 }
             }

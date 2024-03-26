@@ -13,10 +13,12 @@ leptos = { version = "0.6.9", features = ["csr"] }
 wasm-bindgen.workspace = true
 wasm-bindgen-futures.workspace = true
 hk-trading = { path = "../hk-trading" }
+hktrading-client.workspace = true
 stylance = "0.3.0"
 leptos_meta = { version="0.6.9", features = ["csr"] }
 charming = { version = "0.3.1", features = ["wasm"] }
 serde_json = "1.0.114"
+chrono.workspace = true
 
 [package.metadata.leptos]
 output-name = "web_chart"

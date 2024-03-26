@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::errors::HkError;
+use crate::{convert_i64_to_datetime_utc, errors::HkError};
 use chrono::{NaiveDateTime, TimeZone, Utc};
 use hktrading_client::types::SymbolTicker;
 
@@ -54,12 +54,15 @@ impl From<hktrading_client::types::Candles> for super::Candles {
                 candles
                     .times
                     .iter()
-                    .map(|t| {
-                        let dt: NaiveDateTime = NaiveDateTime::from_timestamp_opt(*t, 0).unwrap();
-                        Utc.from_utc_datetime(&dt)
-                    })
+                    .map(|t| { convert_i64_to_datetime_utc(*t) })
                     .collect(),
-            );
+            )
+            .set_opens(candles.opens)
+            .set_closes(candles.closes)
+            .set_lows(candles.lows)
+            .set_highs(candles.highs)
+            // .set_volumes(candles.vols)
+            ;
         c
     }
 }

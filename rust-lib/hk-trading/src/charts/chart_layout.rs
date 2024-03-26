@@ -1,3 +1,5 @@
+use chrono::{DateTime, Utc};
+
 use crate::data::Resolution;
 
 pub struct ChartLayoutState {
@@ -14,4 +16,9 @@ pub struct ChartLayoutSave {
     symbol: String,
     resolution: Resolution,
     content: String,
+}
+
+pub struct ChartDisplayState {
+    from_time: DateTime<Utc>,
+    to_time: DateTime<Utc>
 }

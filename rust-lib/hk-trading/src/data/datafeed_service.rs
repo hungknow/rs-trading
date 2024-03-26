@@ -1,14 +1,14 @@
 use chrono::{DateTime, Utc};
 use hktrading_client::types::SymbolTicker;
-use std::collections::HashMap;
+use std::{cell::RefCell, collections::HashMap};
 
-use super::{Candles, Resolution};
+use super::{Candles, OhlcOrderBlock, Resolution};
 use crate::errors::{self, HkError};
 
 pub trait OhlcFeedService {
     // fn get_ohlc_by_symbol_resolution(&self, symbol_ticker: &str, resolution: &str) -> Option<&Vec<Candles>>;
     fn get_ohlc_by_symbol_resolution_time_range(
-        &self,
+        &mut self,
         symbol_ticker: SymbolTicker,
         resolution: Resolution,
         from_time: Option<DateTime<Utc>>,
@@ -20,7 +20,7 @@ pub trait OhlcFeedService {
 
 pub struct OhlcFeedServiceImpl {
     // one symbol ticker + resolution -> array of candles
-    data: HashMap<SymbolTicker, HashMap<Resolution, Vec<Candles>>>,
+    data: HashMap<SymbolTicker, HashMap<Resolution, OhlcOrderBlock>>,
     hkclient: hktrading_client::Client,
 }
 
@@ -33,15 +33,15 @@ impl OhlcFeedServiceImpl {
     }
 
     // Get list of candles by symbol and resolution
-    pub fn get_ohlc_by_symbol_resolution(
-        &self,
-        symbol_ticker: SymbolTicker,
-        resolution: Resolution,
-    ) -> Option<&Vec<Candles>> {
-        self.data
-            .get(&symbol_ticker)
-            .and_then(|x| x.get(&resolution))
-    }
+    // pub fn get_ohlc_by_symbol_resolution(
+    //     &self,
+    //     symbol_ticker: SymbolTicker,
+    //     resolution: Resolution,
+    // ) -> Option<&Vec<Candles>> {
+    //     self.data
+    //         .get(&symbol_ticker)
+    //         .and_then(|x| x.get(&resolution))
+    // }
 
     // Get candles by symbol, resolution and time range, totime is optional
     // pub fn get_ohlc_by_symbol_resolution_time_range(&self, symbol_ticker: &str, resolution: &str, from_time: i64, to_time: Option<i64>) -> Option<Vec<Candles>> {
@@ -81,7 +81,7 @@ impl OhlcFeedServiceImpl {
 
 impl OhlcFeedService for OhlcFeedServiceImpl {
     async fn get_ohlc_by_symbol_resolution_time_range(
-        &self,
+        &mut self,
         symbol_ticker: SymbolTicker,
         resolution: Resolution,
         from_time: Option<DateTime<Utc>>,
@@ -110,12 +110,14 @@ impl OhlcFeedService for OhlcFeedServiceImpl {
             Err(e) => Err(e.into()),
         };
         let candles = cr?;
-
+        
         // after getting the data, set the data to store
-        // self.data
-        //     .entry(*symbol_ticker)
-        //     .or_insert(HashMap::new())
-        //     .insert(*resolution, candles.clone());
+        let candle_block = self.data
+            .entry(symbol_ticker)
+            .or_insert(HashMap::new())
+            .entry(resolution)
+            .or_insert(OhlcOrderBlock::new());
+        candle_block.merge_block(RefCell::new(Box::new(candles.clone())))?;
 
         Ok(candles)
     }
