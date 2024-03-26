@@ -1,15 +1,15 @@
-use std::{cell::RefCell, sync::{Arc, RwLock}};
+use std::{cell::RefCell, sync::{Arc, Mutex, RwLock}};
 
 use hk_trading::data::datafeed_service::{OhlcFeedService, OhlcFeedServiceImpl};
 
 #[derive(Clone)]
 pub struct OhlcFeedServiceContext {
-    pub ohlc_feed_service: Arc<RwLock<OhlcFeedServiceImpl>>,
+    pub ohlc_feed_service: Arc<Mutex<OhlcFeedServiceImpl>>,
     //     // pub Arc<Box<dyn OhlcFeedService>>
 }
 
 impl OhlcFeedServiceContext {
-    pub fn new(ohlc_feed_service: Arc<RwLock<OhlcFeedServiceImpl>>) -> Self {
+    pub fn new(ohlc_feed_service: Arc<Mutex<OhlcFeedServiceImpl>>) -> Self {
         Self {
             //             // ohlc_feed_service
             ohlc_feed_service: ohlc_feed_service.clone(),

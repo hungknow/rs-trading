@@ -14,7 +14,7 @@ pub fn ohlc_gen(candles: &Candles) -> Chart {
     let data: Vec<Vec<f64>> = candles.open_times
         .iter()
         .enumerate()
-        .map(|(row_idx, open_time)| {
+        .map(|(row_idx, _)| {
             vec![
                 candles.opens[row_idx],
                 candles.closes[row_idx],

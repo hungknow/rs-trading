@@ -1,4 +1,4 @@
-use std::sync::{Arc, RwLock};
+use std::sync::{Arc, Mutex, RwLock};
 
 use hk_trading::data::datafeed_service::OhlcFeedServiceImpl;
 use leptos::*;
@@ -22,7 +22,7 @@ fn App() -> impl IntoView {
 
     let mut client = hktrading_client::Client::new("http://localhost:9001");
     let mut ohldFeedService = OhlcFeedServiceImpl::new(client);
-    let ohlcFeedServiceCtx = OhlcFeedServiceContext::new(Arc::new(RwLock::new(ohldFeedService)));
+    let ohlcFeedServiceCtx = OhlcFeedServiceContext::new(Arc::new(Mutex::new(ohldFeedService)));
 
     provide_context(ohlcFeedServiceCtx);
     view! {
