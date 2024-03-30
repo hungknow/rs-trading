@@ -4,11 +4,12 @@ use hk_trading::data::datafeed_service::OhlcFeedServiceImpl;
 use leptos::*;
 use leptos_meta::*;
 use web_chart::{components::Chart, OhlcFeedServiceContext};
+stylance::import_crate_style!(style, "src/main.module.scss");
 
 #[component]
 fn ChartContainer() -> impl IntoView {
     view! {
-        <div>
+        <div class=style::chart_container>
             <h1>"Chart"</h1>
             <Chart />
         </div>

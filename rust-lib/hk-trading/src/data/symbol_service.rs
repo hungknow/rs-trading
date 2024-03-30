@@ -27,5 +27,4 @@ impl SymbolService {
         // call the search API
         Err(HkError::InvalidParameter)
     }
-    
 }

@@ -27,3 +27,10 @@
     margin-left: 4px;
     margin-right: 4px;
 }
+
+
+.chart_container-1ee4825 {
+    display: flex;
+    flex-direction: column;
+    // height: 100%;
+}
