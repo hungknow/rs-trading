@@ -1,5 +1,5 @@
 [workspace]
-members = [ "hk-dispatcher", "hk-trading", "web_chart" ]
+members = [ "hk-dispatcher", "hk-infra", "hk-trading", "web_chart" ]
 resolver = "2"
 
 [workspace.dependencies]
