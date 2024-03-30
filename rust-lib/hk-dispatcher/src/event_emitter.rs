@@ -1,4 +1,4 @@
-use std::{any::Any, collections::HashMap, marker::PhantomData, sync::Arc};
+use std::{any::{Any, TypeId}, collections::HashMap, marker::PhantomData, sync::Arc};
 
 /*
 - Handler for message
@@ -8,8 +8,16 @@ use std::{any::Any, collections::HashMap, marker::PhantomData, sync::Arc};
 - Returns the ID to unregister the handler later
 */
 
+enum Events {
+    I32Event(i32),
+    U32Event(u32),
+    MultiArgEvent(i32, u32),
+}
+
+trait FromDataRequest {}
+
 trait Handle {
-    fn call(&self, args: Box<dyn Any>);
+    fn call(&self, args: &dyn Any);
 }
 
 trait ArgumentCall<A: Clone> {
@@ -36,7 +44,7 @@ where
     H: ArgumentCall<A>,
     A: Clone,
 {
-    fn call(&self, args: Box<dyn Any>) {
+    fn call(&self, args: &dyn Any) {
         if let Some(real_arg) = args.downcast_ref::<A>() {
             self.handle.call(real_arg.clone());
         }
@@ -66,17 +74,17 @@ impl EventEmitter {
             .get(event)
             .map(|listeners| {
                 listeners.iter().for_each(|listener| {
-                    listener.call(Box::new(data.clone()));
+                    listener.call(&data);
                 });
             });
     }
 }
 
 pub struct EventHandler<T: 'static> {
-    handler: Arc<Box<dyn Fn(T)>>,
+    handler: Arc<Box<dyn Fn(&T)>>,
 }
 impl<T> EventHandler<T> {
-    pub fn new(handler: Box<dyn Fn(T)>) -> Self {
+    pub fn new(handler: Box<dyn Fn(&T)>) -> Self {
         Self {
             handler: Arc::new(handler),
         }
@@ -84,17 +92,24 @@ impl<T> EventHandler<T> {
 }
 
 impl<A: Clone> Handle for EventHandler<A> {
-    fn call(&self, args: Box<dyn Any>) {
-        // println!("EventHandler called with value: {:?}", args);
+    // fn call(&self, args: Box<dyn Any>) {
+    //     // println!("EventHandler called with value: {:?}", args);
+    //     if let Some(real_arg) = args.downcast_ref::<A>() {
+    //         (self.handler)(real_arg.clone());
+    //     } else {
+    //         println!("EventHandler called with wrong type");
+    //     }
+    // }
+    fn call(&self, args: &dyn Any) {
         if let Some(real_arg) = args.downcast_ref::<A>() {
-            (self.handler)(real_arg.clone());
+            (self.handler)(real_arg);
         } else {
             println!("EventHandler called with wrong type");
         }
     }
 }
 
-fn event_handler_create<T>(handler: impl Fn(T) + 'static) -> EventHandler<T> {
+fn event_handler_create<T>(handler: impl Fn(&T) + 'static) -> EventHandler<T> {
     EventHandler::new(Box::new(handler))
 }
 
@@ -110,7 +125,7 @@ mod tests {
         let uevent_multi_arg = "multi_arg_event";
 
         // Register the event listener by handler
-        let handler = event_handler_create(|val: i32| {
+        let handler = event_handler_create(|val: &i32| {
             println!("Handler called with value: {}", val);
         });
         emitter.on(event_i32, handler);
@@ -122,16 +137,33 @@ mod tests {
         emitter.emit(event_i32, data);
         emitter.emit(event_i32, data_i32);
 
-        let u32_handler = event_handler_create(|val: u32| {
+        let u32_handler = event_handler_create(|val: &u32| {
             println!("Handler event_u32 called with value: {}", val);
         });
         emitter.on(event_u32, u32_handler);
         emitter.emit(event_u32, 100u32);
 
-        let multi_argument_handler = event_handler_create(|val: (i32, u32)| {
+        let multi_argument_handler = event_handler_create(|val: &(i32, u32)| {
             println!("Handler uevent_multi_arg called with value: {:?}", val);
         });
         emitter.on(uevent_multi_arg, multi_argument_handler);
         emitter.emit(uevent_multi_arg, (10i32, 100u32));
     }
 }
+
+
+trait GetEventId {
+    fn get_event_id(&self) -> &'static str;
+}
+
+// impl Handler<Events::I32Event> {
+//     fn new(handler: impl Fn(i32) + 'static) -> Self {
+//         Self {
+//             handler: Arc::new(Box::new(handler)),
+//         }
+//     }
+// }
+
+// pub struct EventEmitterEnumHolder {
+//     listeners: HashMap<TypeId, Vec<Box<dyn Handle>>>,
+// }
