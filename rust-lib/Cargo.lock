@@ -941,6 +941,7 @@ dependencies = [
 name = "hk-infra"
 version = "0.1.0"
 dependencies = [
+ "pin-project",
  "tracing",
  "wasm-bindgen",
  "wasm-bindgen-futures",
