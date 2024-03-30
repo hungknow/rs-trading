@@ -44,7 +44,7 @@ pub fn ohlc_gen(candles: &Candles) -> Chart {
                 .scale(true)
                 .split_line(SplitLine::new().show(false)),
         )
-        .grid(Grid::new().bottom(80))
+        .grid(Grid::new().bottom(80).left(80).right(30))
         .data_zoom(
             DataZoom::new()
                 .handle_icon(ICON)

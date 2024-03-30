@@ -22,3 +22,13 @@ pub struct ChartDisplayState {
     from_time: DateTime<Utc>,
     to_time: DateTime<Utc>
 }
+
+pub struct TimeRange {
+    /// Left-bound of the range | Index (in IB mode)
+    t1: i64,
+
+    /// Right-bound of the range | Index (in IB mode)
+    t2: i64,
+
+    exp: bool
+}

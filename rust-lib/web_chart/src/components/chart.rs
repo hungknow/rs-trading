@@ -1,16 +1,9 @@
+use leptos_use::use_resize_observer;
 use serde_wasm_bindgen::to_value;
-use std::{
-    borrow::BorrowMut,
-    cell::RefCell,
-    ops::Deref,
-    sync::{Arc, Mutex, RwLock},
-};
+use std::sync::{Arc, Mutex};
 
-use crate::{
-    components::{ohlc::ohlc_chart, shanhai_index::shanhai_chart, ChartControl},
-    OhlcFeedServiceContext,
-};
-use charming::{Animation, ChartResize, Echarts, WasmRenderer};
+use crate::{components::ChartControl, OhlcFeedServiceContext};
+use charming::{Animation, Echarts, WasmRenderer};
 use chrono::DateTime;
 use hk_trading::data::{
     datafeed_service::{OhlcFeedService, OhlcFeedServiceImpl},
@@ -21,12 +14,7 @@ use leptos::{
     component, create_action, create_node_ref, create_signal, html::Div, logging, use_context,
     view, IntoView, SignalGet, SignalSet,
 };
-use leptos_use::{
-    use_element_bounding, use_element_size, use_resize_observer, UseElementBoundingReturn,
-    UseElementSizeReturn,
-};
-use serde_json::json;
-use wasm_bindgen::JsValue;
+
 stylance::import_crate_style!(style, "src/components/chart.module.scss");
 
 use super::ohlc_gen::ohlc_gen;
@@ -108,23 +96,6 @@ pub fn Chart() -> impl IntoView {
     let el = create_node_ref::<Div>();
     let (echarts_s, set_echarts) = create_signal::<CandleData>(CandleData::None);
 
-    // let action = create_action(|_input: &()| async {
-    //    let chart = shanhai_chart();
-
-    //     let renderer = WasmRenderer::new(1200, 700);
-    //     renderer.render("chart",&chart).unwrap();
-    // });
-    // let ohlcFeedService = use_context::<OhlcFeedServiceContext>()
-    //     .unwrap()
-    //     .ohlc_feed_service
-    //     .clone();
-    // create_effect(move |_| {
-    //     let chart = ohlc_chart();
-
-    //     let renderer = WasmRenderer::new(1200, 700);
-    //     renderer.render("chart", &chart).unwrap();
-    // });
-
     // create_effect(move |_| {
     //     create_chart_for_candle(ohlcFeedService.deref().as_ref())
     // });
@@ -141,10 +112,10 @@ pub fn Chart() -> impl IntoView {
     // once.get();
     // create_effect(|_| async move {
 
-    let UseElementSizeReturn { width, height } = use_element_size(el);
+    // let UseElementBoundingReturn { width, height, .. } = use_element_bounding(el);
     // let UseElementBoundingReturn { width, height,.. } = use_element_bounding(el);
-    let width_u32 = width.get() as u32;
-    let height_u32 = height.get() as u32;
+    // let width_u32 = width.get() as u32;
+    // let height_u32 = height.get() as u32;
     // let echart_v = echarts_s.get();
 
     let action = create_action(move |(width_u32, height_u32): &(u32, u32)| {
@@ -153,16 +124,13 @@ pub fn Chart() -> impl IntoView {
         async move {
             match echarts_s.get() {
                 CandleData::Candles(echart) => {
-                    // logging::log!("Resizing chart: {}", j);
                     let c = ChartResize1 {
                         width: w,
                         height: h,
-                        silent: false,
+                        silent: true,
                         animation: None,
                     };
-                    // JsValue::js
                     echart.resize(to_value(&c).unwrap());
-                    // echart.resize(JsValue::UNDEFINED);
                 }
                 CandleData::None => {
                     let ohlcFeedService = use_context::<OhlcFeedServiceContext>()
@@ -170,33 +138,20 @@ pub fn Chart() -> impl IntoView {
                         .ohlc_feed_service
                         .clone();
 
-                    // async move {
                     let r = create_chart_for_candle(ohlcFeedService, w, h).await;
 
-                    match (r) {
+                    match r {
                         Some(echart) => {
-                            // let j = format!(
-                            //     "{{
-                            //     width: {},
-                            //     height: {}
-                            // }}",
-                            //     1500, 600
-                            // );
-                            // logging::log!("Resizing chart: {}", j);
-                            // echart.resize(JsValue::from_str(&j));
                             set_echarts.set(CandleData::Candles(Arc::new(Box::new(echart))));
                         }
                         None => {
                             logging::error!("Error: {}", "No chart found");
                         }
                     }
-                    //     logging::log!("hello")
-                    // }
                 }
             }
         }
     });
-    // action.dispatch((width_u32, height_u32));
 
     use_resize_observer(el, move |entries, observer| {
         let rect = entries[0].content_rect();
@@ -204,8 +159,6 @@ pub fn Chart() -> impl IntoView {
         let h = rect.height() as u32;
 
         action.dispatch((w, h));
-
-        // async move { create_chart_for_candle(ohlcFeedService, w, h).await }
     });
 
     view! {
