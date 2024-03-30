@@ -1,14 +1,17 @@
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
+mod platform_utils;
+pub use platform_utils::*;
+
+if_native! {
+  mod native;
+//   pub mod file_util;
+  pub mod future {
+   pub use crate::native::future::*;
+  }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
+if_wasm! {
+  mod wasm;
+  pub mod future {
+  pub use crate::wasm::future::*;
+  }
 }
