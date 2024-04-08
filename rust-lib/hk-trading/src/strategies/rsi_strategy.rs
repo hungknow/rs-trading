@@ -25,8 +25,7 @@ pub struct RsiStrategy {
 impl RsiStrategy {
     /// Constructs a new [`RSIStrategy`] component using the provided configuration struct.
     pub fn new(config: StrategyRsiConfig) -> Self {
-        let rsi_indicator = RelativeStrengthIndex::new(config.rsi_period)
-            .expect("Failed to construct RSI indicator");
+        let rsi_indicator = RelativeStrengthIndex::new(config.rsi_period);
 
         Self { rsi: rsi_indicator }
     }

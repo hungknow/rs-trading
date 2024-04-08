@@ -930,8 +930,10 @@ checksum = "290f1a1d9242c78d09ce40a5e87e7554ee637af1351968159f4952f028f75604"
 name = "hk-dispatcher"
 version = "0.1.0"
 dependencies = [
+ "hk-infra",
  "protobuf",
  "protobuf-codegen",
+ "tokio",
  "tracing",
  "wasm-bindgen",
  "wasm-bindgen-futures",
@@ -941,6 +943,7 @@ dependencies = [
 name = "hk-infra"
 version = "0.1.0"
 dependencies = [
+ "hktrading-client",
  "pin-project",
  "tracing",
  "wasm-bindgen",
@@ -956,6 +959,7 @@ dependencies = [
  "csv",
  "futures",
  "hk-dispatcher",
+ "hk-infra",
  "hktrading-client",
  "plotters",
  "serde",
@@ -2437,9 +2441,9 @@ checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
 
 [[package]]
 name = "tokio"
-version = "1.36.0"
+version = "1.37.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "61285f6515fa018fb2d1e46eb21223fff441ee8db5d0f1435e8ab4f5cdb80931"
+checksum = "1adbebffeca75fcfd058afa480fb6c0b81e165a0323f9c9d39c9697e37c46787"
 dependencies = [
  "backtrace",
  "bytes",

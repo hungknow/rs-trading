@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use chrono::{DateTime, Utc};
 
-use crate::errors::HkError;
+use hk_infra::HkError;
 
 use super::{Candles, Resolution};
 
@@ -20,6 +20,14 @@ pub struct DataSourceGet<'a> {
     pub start_time: DateTime<Utc>,
     pub end_time: Option<DateTime<Utc>>,
 }
+
+// pub trait DataSource<T> {
+//     // fn get_metadata(self) -> Vec<DataSourceMeta>;
+//     fn get_data_source_from<'a>(
+//         &self,
+//         option: DataSourceGet<'a>,
+//     ) -> HkFutureResult<T, HkError>;
+// }
 
 // #[async_trait]
 pub trait CandleDataSource {

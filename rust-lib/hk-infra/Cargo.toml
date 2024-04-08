@@ -13,3 +13,4 @@ pin-project.workspace = true
 tracing.workspace = true
 wasm-bindgen.workspace = true
 wasm-bindgen-futures.workspace = true
+hktrading-client.workspace = true

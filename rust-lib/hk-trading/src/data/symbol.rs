@@ -19,3 +19,9 @@ pub struct Symbol {
     // "ohlc"/"line"
     pub chart_data_types: Vec<String>,
 }
+
+#[derive(Clone, PartialEq, Debug, Hash)]
+pub struct SymbolIdentity {
+    pub symbol: &'static str,
+    pub resolution: Resolution,
+}

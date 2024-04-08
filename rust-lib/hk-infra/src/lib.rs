@@ -1,3 +1,6 @@
+mod errors;
+pub use errors::*;
+
 mod platform_utils;
 pub use platform_utils::*;
 

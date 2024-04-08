@@ -1,9 +1,8 @@
 use std::cmp::Ordering;
 
 use chrono::{DateTime, Utc};
+use hk_infra::HkError;
 use serde::{Deserialize, Serialize};
-
-use crate::errors::HkError;
 
 use super::Resolution;
 

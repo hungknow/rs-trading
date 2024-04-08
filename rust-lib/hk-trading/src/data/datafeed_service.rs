@@ -3,7 +3,7 @@ use hktrading_client::types::SymbolTicker;
 use std::{cell::RefCell, collections::HashMap};
 
 use super::{Candles, OhlcOrderBlock, Resolution};
-use crate::errors::{self, HkError};
+use hk_infra::{self, HkError};
 
 pub trait OhlcFeedService {
     // fn get_ohlc_by_symbol_resolution(&self, symbol_ticker: &str, resolution: &str) -> Option<&Vec<Candles>>;
@@ -102,7 +102,7 @@ impl OhlcFeedService for OhlcFeedServiceImpl {
             .await;
         // let candleResp = r.unwrap();
         // candleResp.into_inner().into()
-        let cr: Result<Candles, errors::HkError> = match r {
+        let cr: Result<Candles, hk_infra::HkError> = match r {
             Ok(candle_resp) => {
                 // self.set_data(symbol, resolution, candles);
                 Ok(candle_resp.into_inner().into())

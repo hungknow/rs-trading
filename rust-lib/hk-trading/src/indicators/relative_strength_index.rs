@@ -1,5 +1,6 @@
-use crate::errors::Result;
-use crate::{indicators::ExponentialMovingAverage, Next, Period};
+use hk_infra::HkError;
+
+use crate::{indicators::ExponentialMovingAverage, Period};
 
 #[derive(Clone, Debug)]
 pub struct RelativeStrengthIndex {
@@ -11,14 +12,14 @@ pub struct RelativeStrengthIndex {
 }
 
 impl RelativeStrengthIndex {
-    pub fn new(period: usize) -> Result<Self> {
-        Ok(Self {
+    pub fn new(period: usize) -> Self {
+        Self {
             period,
             up_ema_indicator: ExponentialMovingAverage::new(),
             down_ema_indicator: ExponentialMovingAverage::new(),
             // prev_val: 0.0,
             // is_new: true,
-        })
+        }
     }
 
     // pub fn calc<'a>(&self, inputs: &'a [f64]) -> Vec<f64> {

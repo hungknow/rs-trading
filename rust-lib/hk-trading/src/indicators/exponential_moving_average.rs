@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{errors::Result, Reset};
+use crate::{Reset};
 use std::fmt;
 
 use super::traits::Indicator;

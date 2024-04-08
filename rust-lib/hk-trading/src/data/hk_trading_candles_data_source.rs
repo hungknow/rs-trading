@@ -1,10 +1,8 @@
 use std::sync::Arc;
 
-use crate::{convert_i64_to_datetime_utc, errors::HkError};
-use chrono::{NaiveDateTime, TimeZone, Utc};
+use crate::convert_i64_to_datetime_utc;
+use hk_infra::HkError;
 use hktrading_client::types::SymbolTicker;
-
-use super::CandleDataSource;
 
 struct HkTradingCandleDataSource {
     hk_trading_client: Arc<hktrading_client::Client>,
@@ -84,26 +82,6 @@ impl From<crate::data::Resolution> for hktrading_client::types::Resolution {
     }
 }
 
-impl From<hktrading_client::Error<hktrading_client::types::HkError>> for HkError {
-    fn from(e: hktrading_client::Error<hktrading_client::types::HkError>) -> Self {
-        match e {
-            hktrading_client::Error::InvalidRequest(e) => HkError::UnknownError(e),
-            hktrading_client::Error::CommunicationError(e) => HkError::UnknownError(e.to_string()),
-            hktrading_client::Error::InvalidUpgrade(e) => HkError::UnknownError(e.to_string()),
-            hktrading_client::Error::ErrorResponse(e) => {
-                HkError::HkServerError(e.code.unwrap(), e.message.as_deref().unwrap().to_string())
-            }
-            hktrading_client::Error::ResponseBodyError(e) => HkError::UnknownError(e.to_string()),
-            hktrading_client::Error::InvalidResponsePayload(_, e) => {
-                HkError::UnknownError(e.to_string())
-            }
-            hktrading_client::Error::UnexpectedResponse(e) => {
-                HkError::UnknownError(e.status().to_string())
-            }
-            hktrading_client::Error::PreHookError(e) => HkError::UnknownError(e.to_string()),
-        }
-    }
-}
 
 #[cfg(test)]
 mod tests {

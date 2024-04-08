@@ -1,0 +1,28 @@
+package hktrading.chart;
+
+// Event of chart
+
+// Data structure of chart
+enum SerialDataType {
+    SerialDataTypeUnknown = 0;
+    SerialDataTypeOhlc = 1;
+    SerialDataTypeLine = 2;
+}
+
+enum OverlayType {
+    OverlayTypeUnknown = 0;
+    OverlayTypeSymbolData = 1;
+    OverlayTypeRsi = 2;
+}
+
+message OverlayData {
+    required string id = 1;
+    optional string subchart_id = 2;
+    required OverlayType overlay_type = 3;
+    required SerialDataType data_type = 4;
+}
+
+message SubchartData {
+    required string id = 1;
+    optional string chart_position = 2; // (0, 0, 1) => (left, right, span)
+}

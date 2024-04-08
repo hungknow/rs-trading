@@ -26,7 +26,7 @@ use rstrading::{
     drawing::{SubChart, SubChartState},
     indicators::{
         indicator::{IndicatorContainer, IndicatorData},
-        traits::{Indicator, TATimeAware},
+        traits::{Indicator},
         ExponentialMovingAverage, ExponentialMovingAverageState,
     },
     Next, Reset, TimestampValueDS,

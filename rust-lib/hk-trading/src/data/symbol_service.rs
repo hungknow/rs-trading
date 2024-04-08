@@ -1,4 +1,5 @@
-use crate::errors::HkError;
+use hk_infra::HkError;
+
 use super::symbol::Symbol;
 
 pub struct SearchSymbols {
