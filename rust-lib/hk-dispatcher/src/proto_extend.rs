@@ -1,4 +1,4 @@
-use crate::protos::ffi_request::FFIRequest;
+use crate::protos::ffi_request::HkFFIRequest;
 use protobuf::Message;
 
 // #[warn(unused_macros)]
@@ -22,22 +22,27 @@ macro_rules! impl_protobuf_message_to_vec {
 //         buf
 //     }
 // }
-impl_protobuf_message_to_vec!(FFIRequest);
+impl_protobuf_message_to_vec!(HkFFIRequest);
 
 #[cfg(test)]
 mod tests {
+    use crate::protos::ffi_event_type::HkFFIEventType;
+
     use super::*;
 
     #[test]
     fn test_protobuf_message_to_vec() {
-        let mut request = FFIRequest::new();
-        request.event = "test".to_string();
+        let mut request = HkFFIRequest::new();
+        request.event = HkFFIEventType::HK_FFI_REQ_UNKNOWN.into();
         request.payload = vec![1, 2, 3, 4];
 
         let bytes: Vec<u8> = request.into();
-        let parsed_request = FFIRequest::parse_from_bytes(&bytes).unwrap();
+        let parsed_request = HkFFIRequest::parse_from_bytes(&bytes).unwrap();
 
-        assert_eq!(parsed_request.event, "test");
+        assert_eq!(
+            parsed_request.event,
+            HkFFIEventType::HK_FFI_REQ_UNKNOWN.into()
+        );
         assert_eq!(parsed_request.payload, vec![1, 2, 3, 4]);
     }
 }

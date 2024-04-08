@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+message AddEventRequest {
+    int64 a = 1;
+    int64 b = 2;
+}
+
+message AddEventResponse {
+    int64 result = 1;
+}

@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+enum HkFFIEventType {
+    HK_FFI_REQ_UNKNOWN = 0;
+
+    // Chart
+    HK_FFI_REQ_CHART_GET_SVG = 1000;
+    HK_FFI_RES_CHART_GET_SVG = 1001;
+    // HK_FFI_REQ_CHART_
+
+    // Symbol
+    HK_FFI_REQ_SYMBOL_GET_INFO = 2000;
+
+
+    // Notification
+}

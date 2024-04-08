@@ -14,7 +14,8 @@ tracing.workspace = true
 wasm-bindgen.workspace = true
 wasm-bindgen-futures.workspace = true
 protobuf.workspace = true
-# futures-core = { version = "0.3", default-features = true }
+hk-infra = { path = "../hk-infra" }
+tokio.workspace = true
 
 [build-dependencies]
 protobuf-codegen.workspace = true

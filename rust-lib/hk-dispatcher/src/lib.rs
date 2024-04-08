@@ -1,8 +1,14 @@
 mod protos;
+pub use protos::*;
 mod dispatcher;
+pub use dispatcher::*;
 mod event_emitter;
+mod message_handler;
+pub use message_handler::*;
 mod wasm;
 mod proto_extend;
 // mod task;
 // pub use task::*;
 pub use proto_extend::*;
+mod runtime;
+pub use runtime::*;

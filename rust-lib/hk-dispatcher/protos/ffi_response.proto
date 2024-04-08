@@ -1,11 +1,14 @@
 syntax = "proto3";
 
-message FFIResponse {
-    bytes payload = 1;
-    FFIStatusCode code = 2;
+import "ffi_event_type.proto";
+
+message HkFFIResponse {
+    HkFFIEventType event = 1;
+    bytes payload = 2;
+    HkFFIStatusCode code = 3;
 }
 
-enum FFIStatusCode {
+enum HkFFIStatusCode {
     Ok = 0;
     Err = 1;
     Internal = 2;

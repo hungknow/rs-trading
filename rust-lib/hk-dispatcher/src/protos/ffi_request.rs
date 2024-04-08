@@ -25,27 +25,27 @@
 /// of protobuf runtime.
 const _PROTOBUF_VERSION_CHECK: () = ::protobuf::VERSION_3_4_0;
 
-// @@protoc_insertion_point(message:FFIRequest)
+// @@protoc_insertion_point(message:HkFFIRequest)
 #[derive(PartialEq,Clone,Default,Debug)]
-pub struct FFIRequest {
+pub struct HkFFIRequest {
     // message fields
-    // @@protoc_insertion_point(field:FFIRequest.event)
-    pub event: ::std::string::String,
-    // @@protoc_insertion_point(field:FFIRequest.payload)
+    // @@protoc_insertion_point(field:HkFFIRequest.event)
+    pub event: ::protobuf::EnumOrUnknown<super::ffi_event_type::HkFFIEventType>,
+    // @@protoc_insertion_point(field:HkFFIRequest.payload)
     pub payload: ::std::vec::Vec<u8>,
     // special fields
-    // @@protoc_insertion_point(special_field:FFIRequest.special_fields)
+    // @@protoc_insertion_point(special_field:HkFFIRequest.special_fields)
     pub special_fields: ::protobuf::SpecialFields,
 }
 
-impl<'a> ::std::default::Default for &'a FFIRequest {
-    fn default() -> &'a FFIRequest {
-        <FFIRequest as ::protobuf::Message>::default_instance()
+impl<'a> ::std::default::Default for &'a HkFFIRequest {
+    fn default() -> &'a HkFFIRequest {
+        <HkFFIRequest as ::protobuf::Message>::default_instance()
     }
 }
 
-impl FFIRequest {
-    pub fn new() -> FFIRequest {
+impl HkFFIRequest {
+    pub fn new() -> HkFFIRequest {
         ::std::default::Default::default()
     }
 
@@ -54,24 +54,24 @@ impl FFIRequest {
         let mut oneofs = ::std::vec::Vec::with_capacity(0);
         fields.push(::protobuf::reflect::rt::v2::make_simpler_field_accessor::<_, _>(
             "event",
-            |m: &FFIRequest| { &m.event },
-            |m: &mut FFIRequest| { &mut m.event },
+            |m: &HkFFIRequest| { &m.event },
+            |m: &mut HkFFIRequest| { &mut m.event },
         ));
         fields.push(::protobuf::reflect::rt::v2::make_simpler_field_accessor::<_, _>(
             "payload",
-            |m: &FFIRequest| { &m.payload },
-            |m: &mut FFIRequest| { &mut m.payload },
+            |m: &HkFFIRequest| { &m.payload },
+            |m: &mut HkFFIRequest| { &mut m.payload },
         ));
-        ::protobuf::reflect::GeneratedMessageDescriptorData::new_2::<FFIRequest>(
-            "FFIRequest",
+        ::protobuf::reflect::GeneratedMessageDescriptorData::new_2::<HkFFIRequest>(
+            "HkFFIRequest",
             fields,
             oneofs,
         )
     }
 }
 
-impl ::protobuf::Message for FFIRequest {
-    const NAME: &'static str = "FFIRequest";
+impl ::protobuf::Message for HkFFIRequest {
+    const NAME: &'static str = "HkFFIRequest";
 
     fn is_initialized(&self) -> bool {
         true
@@ -80,8 +80,8 @@ impl ::protobuf::Message for FFIRequest {
     fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::Result<()> {
         while let Some(tag) = is.read_raw_tag_or_eof()? {
             match tag {
-                10 => {
-                    self.event = is.read_string()?;
+                8 => {
+                    self.event = is.read_enum_or_unknown()?;
                 },
                 18 => {
                     self.payload = is.read_bytes()?;
@@ -98,8 +98,8 @@ impl ::protobuf::Message for FFIRequest {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u64 {
         let mut my_size = 0;
-        if !self.event.is_empty() {
-            my_size += ::protobuf::rt::string_size(1, &self.event);
+        if self.event != ::protobuf::EnumOrUnknown::new(super::ffi_event_type::HkFFIEventType::HK_FFI_REQ_UNKNOWN) {
+            my_size += ::protobuf::rt::int32_size(1, self.event.value());
         }
         if !self.payload.is_empty() {
             my_size += ::protobuf::rt::bytes_size(2, &self.payload);
@@ -110,8 +110,8 @@ impl ::protobuf::Message for FFIRequest {
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::Result<()> {
-        if !self.event.is_empty() {
-            os.write_string(1, &self.event)?;
+        if self.event != ::protobuf::EnumOrUnknown::new(super::ffi_event_type::HkFFIEventType::HK_FFI_REQ_UNKNOWN) {
+            os.write_enum(1, ::protobuf::EnumOrUnknown::value(&self.event))?;
         }
         if !self.payload.is_empty() {
             os.write_bytes(2, &self.payload)?;
@@ -128,19 +128,19 @@ impl ::protobuf::Message for FFIRequest {
         &mut self.special_fields
     }
 
-    fn new() -> FFIRequest {
-        FFIRequest::new()
+    fn new() -> HkFFIRequest {
+        HkFFIRequest::new()
     }
 
     fn clear(&mut self) {
-        self.event.clear();
+        self.event = ::protobuf::EnumOrUnknown::new(super::ffi_event_type::HkFFIEventType::HK_FFI_REQ_UNKNOWN);
         self.payload.clear();
         self.special_fields.clear();
     }
 
-    fn default_instance() -> &'static FFIRequest {
-        static instance: FFIRequest = FFIRequest {
-            event: ::std::string::String::new(),
+    fn default_instance() -> &'static HkFFIRequest {
+        static instance: HkFFIRequest = HkFFIRequest {
+            event: ::protobuf::EnumOrUnknown::from_i32(0),
             payload: ::std::vec::Vec::new(),
             special_fields: ::protobuf::SpecialFields::new(),
         };
@@ -148,27 +148,27 @@ impl ::protobuf::Message for FFIRequest {
     }
 }
 
-impl ::protobuf::MessageFull for FFIRequest {
+impl ::protobuf::MessageFull for HkFFIRequest {
     fn descriptor() -> ::protobuf::reflect::MessageDescriptor {
         static descriptor: ::protobuf::rt::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::Lazy::new();
-        descriptor.get(|| file_descriptor().message_by_package_relative_name("FFIRequest").unwrap()).clone()
+        descriptor.get(|| file_descriptor().message_by_package_relative_name("HkFFIRequest").unwrap()).clone()
     }
 }
 
-impl ::std::fmt::Display for FFIRequest {
+impl ::std::fmt::Display for HkFFIRequest {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
         ::protobuf::text_format::fmt(self, f)
     }
 }
 
-impl ::protobuf::reflect::ProtobufValue for FFIRequest {
+impl ::protobuf::reflect::ProtobufValue for HkFFIRequest {
     type RuntimeType = ::protobuf::reflect::rt::RuntimeTypeMessage<Self>;
 }
 
 static file_descriptor_proto_data: &'static [u8] = b"\
-    \n\x11ffi_request.proto\"<\n\nFFIRequest\x12\x14\n\x05event\x18\x01\x20\
-    \x01(\tR\x05event\x12\x18\n\x07payload\x18\x02\x20\x01(\x0cR\x07payloadb\
-    \x06proto3\
+    \n\x11ffi_request.proto\x1a\x14ffi_event_type.proto\"O\n\x0cHkFFIRequest\
+    \x12%\n\x05event\x18\x01\x20\x01(\x0e2\x0f.HkFFIEventTypeR\x05event\x12\
+    \x18\n\x07payload\x18\x02\x20\x01(\x0cR\x07payloadb\x06proto3\
 ";
 
 /// `FileDescriptorProto` object which was a source for this generated file
@@ -185,9 +185,10 @@ pub fn file_descriptor() -> &'static ::protobuf::reflect::FileDescriptor {
     static file_descriptor: ::protobuf::rt::Lazy<::protobuf::reflect::FileDescriptor> = ::protobuf::rt::Lazy::new();
     file_descriptor.get(|| {
         let generated_file_descriptor = generated_file_descriptor_lazy.get(|| {
-            let mut deps = ::std::vec::Vec::with_capacity(0);
+            let mut deps = ::std::vec::Vec::with_capacity(1);
+            deps.push(super::ffi_event_type::file_descriptor().clone());
             let mut messages = ::std::vec::Vec::with_capacity(1);
-            messages.push(FFIRequest::generated_message_descriptor_data());
+            messages.push(HkFFIRequest::generated_message_descriptor_data());
             let mut enums = ::std::vec::Vec::with_capacity(0);
             ::protobuf::reflect::GeneratedFileDescriptor::new_generated(
                 file_descriptor_proto(),

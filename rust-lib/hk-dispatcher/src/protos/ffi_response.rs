@@ -25,53 +25,60 @@
 /// of protobuf runtime.
 const _PROTOBUF_VERSION_CHECK: () = ::protobuf::VERSION_3_4_0;
 
-// @@protoc_insertion_point(message:FFIResponse)
+// @@protoc_insertion_point(message:HkFFIResponse)
 #[derive(PartialEq,Clone,Default,Debug)]
-pub struct FFIResponse {
+pub struct HkFFIResponse {
     // message fields
-    // @@protoc_insertion_point(field:FFIResponse.payload)
+    // @@protoc_insertion_point(field:HkFFIResponse.event)
+    pub event: ::protobuf::EnumOrUnknown<super::ffi_event_type::HkFFIEventType>,
+    // @@protoc_insertion_point(field:HkFFIResponse.payload)
     pub payload: ::std::vec::Vec<u8>,
-    // @@protoc_insertion_point(field:FFIResponse.code)
-    pub code: ::protobuf::EnumOrUnknown<FFIStatusCode>,
+    // @@protoc_insertion_point(field:HkFFIResponse.code)
+    pub code: ::protobuf::EnumOrUnknown<HkFFIStatusCode>,
     // special fields
-    // @@protoc_insertion_point(special_field:FFIResponse.special_fields)
+    // @@protoc_insertion_point(special_field:HkFFIResponse.special_fields)
     pub special_fields: ::protobuf::SpecialFields,
 }
 
-impl<'a> ::std::default::Default for &'a FFIResponse {
-    fn default() -> &'a FFIResponse {
-        <FFIResponse as ::protobuf::Message>::default_instance()
+impl<'a> ::std::default::Default for &'a HkFFIResponse {
+    fn default() -> &'a HkFFIResponse {
+        <HkFFIResponse as ::protobuf::Message>::default_instance()
     }
 }
 
-impl FFIResponse {
-    pub fn new() -> FFIResponse {
+impl HkFFIResponse {
+    pub fn new() -> HkFFIResponse {
         ::std::default::Default::default()
     }
 
     fn generated_message_descriptor_data() -> ::protobuf::reflect::GeneratedMessageDescriptorData {
-        let mut fields = ::std::vec::Vec::with_capacity(2);
+        let mut fields = ::std::vec::Vec::with_capacity(3);
         let mut oneofs = ::std::vec::Vec::with_capacity(0);
         fields.push(::protobuf::reflect::rt::v2::make_simpler_field_accessor::<_, _>(
+            "event",
+            |m: &HkFFIResponse| { &m.event },
+            |m: &mut HkFFIResponse| { &mut m.event },
+        ));
+        fields.push(::protobuf::reflect::rt::v2::make_simpler_field_accessor::<_, _>(
             "payload",
-            |m: &FFIResponse| { &m.payload },
-            |m: &mut FFIResponse| { &mut m.payload },
+            |m: &HkFFIResponse| { &m.payload },
+            |m: &mut HkFFIResponse| { &mut m.payload },
         ));
         fields.push(::protobuf::reflect::rt::v2::make_simpler_field_accessor::<_, _>(
             "code",
-            |m: &FFIResponse| { &m.code },
-            |m: &mut FFIResponse| { &mut m.code },
+            |m: &HkFFIResponse| { &m.code },
+            |m: &mut HkFFIResponse| { &mut m.code },
         ));
-        ::protobuf::reflect::GeneratedMessageDescriptorData::new_2::<FFIResponse>(
-            "FFIResponse",
+        ::protobuf::reflect::GeneratedMessageDescriptorData::new_2::<HkFFIResponse>(
+            "HkFFIResponse",
             fields,
             oneofs,
         )
     }
 }
 
-impl ::protobuf::Message for FFIResponse {
-    const NAME: &'static str = "FFIResponse";
+impl ::protobuf::Message for HkFFIResponse {
+    const NAME: &'static str = "HkFFIResponse";
 
     fn is_initialized(&self) -> bool {
         true
@@ -80,10 +87,13 @@ impl ::protobuf::Message for FFIResponse {
     fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::Result<()> {
         while let Some(tag) = is.read_raw_tag_or_eof()? {
             match tag {
-                10 => {
+                8 => {
+                    self.event = is.read_enum_or_unknown()?;
+                },
+                18 => {
                     self.payload = is.read_bytes()?;
                 },
-                16 => {
+                24 => {
                     self.code = is.read_enum_or_unknown()?;
                 },
                 tag => {
@@ -98,11 +108,14 @@ impl ::protobuf::Message for FFIResponse {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u64 {
         let mut my_size = 0;
-        if !self.payload.is_empty() {
-            my_size += ::protobuf::rt::bytes_size(1, &self.payload);
+        if self.event != ::protobuf::EnumOrUnknown::new(super::ffi_event_type::HkFFIEventType::HK_FFI_REQ_UNKNOWN) {
+            my_size += ::protobuf::rt::int32_size(1, self.event.value());
         }
-        if self.code != ::protobuf::EnumOrUnknown::new(FFIStatusCode::Ok) {
-            my_size += ::protobuf::rt::int32_size(2, self.code.value());
+        if !self.payload.is_empty() {
+            my_size += ::protobuf::rt::bytes_size(2, &self.payload);
+        }
+        if self.code != ::protobuf::EnumOrUnknown::new(HkFFIStatusCode::Ok) {
+            my_size += ::protobuf::rt::int32_size(3, self.code.value());
         }
         my_size += ::protobuf::rt::unknown_fields_size(self.special_fields.unknown_fields());
         self.special_fields.cached_size().set(my_size as u32);
@@ -110,11 +123,14 @@ impl ::protobuf::Message for FFIResponse {
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::Result<()> {
-        if !self.payload.is_empty() {
-            os.write_bytes(1, &self.payload)?;
+        if self.event != ::protobuf::EnumOrUnknown::new(super::ffi_event_type::HkFFIEventType::HK_FFI_REQ_UNKNOWN) {
+            os.write_enum(1, ::protobuf::EnumOrUnknown::value(&self.event))?;
         }
-        if self.code != ::protobuf::EnumOrUnknown::new(FFIStatusCode::Ok) {
-            os.write_enum(2, ::protobuf::EnumOrUnknown::value(&self.code))?;
+        if !self.payload.is_empty() {
+            os.write_bytes(2, &self.payload)?;
+        }
+        if self.code != ::protobuf::EnumOrUnknown::new(HkFFIStatusCode::Ok) {
+            os.write_enum(3, ::protobuf::EnumOrUnknown::value(&self.code))?;
         }
         os.write_unknown_fields(self.special_fields.unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -128,18 +144,20 @@ impl ::protobuf::Message for FFIResponse {
         &mut self.special_fields
     }
 
-    fn new() -> FFIResponse {
-        FFIResponse::new()
+    fn new() -> HkFFIResponse {
+        HkFFIResponse::new()
     }
 
     fn clear(&mut self) {
+        self.event = ::protobuf::EnumOrUnknown::new(super::ffi_event_type::HkFFIEventType::HK_FFI_REQ_UNKNOWN);
         self.payload.clear();
-        self.code = ::protobuf::EnumOrUnknown::new(FFIStatusCode::Ok);
+        self.code = ::protobuf::EnumOrUnknown::new(HkFFIStatusCode::Ok);
         self.special_fields.clear();
     }
 
-    fn default_instance() -> &'static FFIResponse {
-        static instance: FFIResponse = FFIResponse {
+    fn default_instance() -> &'static HkFFIResponse {
+        static instance: HkFFIResponse = HkFFIResponse {
+            event: ::protobuf::EnumOrUnknown::from_i32(0),
             payload: ::std::vec::Vec::new(),
             code: ::protobuf::EnumOrUnknown::from_i32(0),
             special_fields: ::protobuf::SpecialFields::new(),
@@ -148,70 +166,70 @@ impl ::protobuf::Message for FFIResponse {
     }
 }
 
-impl ::protobuf::MessageFull for FFIResponse {
+impl ::protobuf::MessageFull for HkFFIResponse {
     fn descriptor() -> ::protobuf::reflect::MessageDescriptor {
         static descriptor: ::protobuf::rt::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::Lazy::new();
-        descriptor.get(|| file_descriptor().message_by_package_relative_name("FFIResponse").unwrap()).clone()
+        descriptor.get(|| file_descriptor().message_by_package_relative_name("HkFFIResponse").unwrap()).clone()
     }
 }
 
-impl ::std::fmt::Display for FFIResponse {
+impl ::std::fmt::Display for HkFFIResponse {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
         ::protobuf::text_format::fmt(self, f)
     }
 }
 
-impl ::protobuf::reflect::ProtobufValue for FFIResponse {
+impl ::protobuf::reflect::ProtobufValue for HkFFIResponse {
     type RuntimeType = ::protobuf::reflect::rt::RuntimeTypeMessage<Self>;
 }
 
 #[derive(Clone,Copy,PartialEq,Eq,Debug,Hash)]
-// @@protoc_insertion_point(enum:FFIStatusCode)
-pub enum FFIStatusCode {
-    // @@protoc_insertion_point(enum_value:FFIStatusCode.Ok)
+// @@protoc_insertion_point(enum:HkFFIStatusCode)
+pub enum HkFFIStatusCode {
+    // @@protoc_insertion_point(enum_value:HkFFIStatusCode.Ok)
     Ok = 0,
-    // @@protoc_insertion_point(enum_value:FFIStatusCode.Err)
+    // @@protoc_insertion_point(enum_value:HkFFIStatusCode.Err)
     Err = 1,
-    // @@protoc_insertion_point(enum_value:FFIStatusCode.Internal)
+    // @@protoc_insertion_point(enum_value:HkFFIStatusCode.Internal)
     Internal = 2,
 }
 
-impl ::protobuf::Enum for FFIStatusCode {
-    const NAME: &'static str = "FFIStatusCode";
+impl ::protobuf::Enum for HkFFIStatusCode {
+    const NAME: &'static str = "HkFFIStatusCode";
 
     fn value(&self) -> i32 {
         *self as i32
     }
 
-    fn from_i32(value: i32) -> ::std::option::Option<FFIStatusCode> {
+    fn from_i32(value: i32) -> ::std::option::Option<HkFFIStatusCode> {
         match value {
-            0 => ::std::option::Option::Some(FFIStatusCode::Ok),
-            1 => ::std::option::Option::Some(FFIStatusCode::Err),
-            2 => ::std::option::Option::Some(FFIStatusCode::Internal),
+            0 => ::std::option::Option::Some(HkFFIStatusCode::Ok),
+            1 => ::std::option::Option::Some(HkFFIStatusCode::Err),
+            2 => ::std::option::Option::Some(HkFFIStatusCode::Internal),
             _ => ::std::option::Option::None
         }
     }
 
-    fn from_str(str: &str) -> ::std::option::Option<FFIStatusCode> {
+    fn from_str(str: &str) -> ::std::option::Option<HkFFIStatusCode> {
         match str {
-            "Ok" => ::std::option::Option::Some(FFIStatusCode::Ok),
-            "Err" => ::std::option::Option::Some(FFIStatusCode::Err),
-            "Internal" => ::std::option::Option::Some(FFIStatusCode::Internal),
+            "Ok" => ::std::option::Option::Some(HkFFIStatusCode::Ok),
+            "Err" => ::std::option::Option::Some(HkFFIStatusCode::Err),
+            "Internal" => ::std::option::Option::Some(HkFFIStatusCode::Internal),
             _ => ::std::option::Option::None
         }
     }
 
-    const VALUES: &'static [FFIStatusCode] = &[
-        FFIStatusCode::Ok,
-        FFIStatusCode::Err,
-        FFIStatusCode::Internal,
+    const VALUES: &'static [HkFFIStatusCode] = &[
+        HkFFIStatusCode::Ok,
+        HkFFIStatusCode::Err,
+        HkFFIStatusCode::Internal,
     ];
 }
 
-impl ::protobuf::EnumFull for FFIStatusCode {
+impl ::protobuf::EnumFull for HkFFIStatusCode {
     fn enum_descriptor() -> ::protobuf::reflect::EnumDescriptor {
         static descriptor: ::protobuf::rt::Lazy<::protobuf::reflect::EnumDescriptor> = ::protobuf::rt::Lazy::new();
-        descriptor.get(|| file_descriptor().enum_by_package_relative_name("FFIStatusCode").unwrap()).clone()
+        descriptor.get(|| file_descriptor().enum_by_package_relative_name("HkFFIStatusCode").unwrap()).clone()
     }
 
     fn descriptor(&self) -> ::protobuf::reflect::EnumValueDescriptor {
@@ -220,23 +238,25 @@ impl ::protobuf::EnumFull for FFIStatusCode {
     }
 }
 
-impl ::std::default::Default for FFIStatusCode {
+impl ::std::default::Default for HkFFIStatusCode {
     fn default() -> Self {
-        FFIStatusCode::Ok
+        HkFFIStatusCode::Ok
     }
 }
 
-impl FFIStatusCode {
+impl HkFFIStatusCode {
     fn generated_enum_descriptor_data() -> ::protobuf::reflect::GeneratedEnumDescriptorData {
-        ::protobuf::reflect::GeneratedEnumDescriptorData::new::<FFIStatusCode>("FFIStatusCode")
+        ::protobuf::reflect::GeneratedEnumDescriptorData::new::<HkFFIStatusCode>("HkFFIStatusCode")
     }
 }
 
 static file_descriptor_proto_data: &'static [u8] = b"\
-    \n\x12ffi_response.proto\"K\n\x0bFFIResponse\x12\x18\n\x07payload\x18\
-    \x01\x20\x01(\x0cR\x07payload\x12\"\n\x04code\x18\x02\x20\x01(\x0e2\x0e.\
-    FFIStatusCodeR\x04code*.\n\rFFIStatusCode\x12\x06\n\x02Ok\x10\0\x12\x07\
-    \n\x03Err\x10\x01\x12\x0c\n\x08Internal\x10\x02b\x06proto3\
+    \n\x12ffi_response.proto\x1a\x14ffi_event_type.proto\"v\n\rHkFFIResponse\
+    \x12%\n\x05event\x18\x01\x20\x01(\x0e2\x0f.HkFFIEventTypeR\x05event\x12\
+    \x18\n\x07payload\x18\x02\x20\x01(\x0cR\x07payload\x12$\n\x04code\x18\
+    \x03\x20\x01(\x0e2\x10.HkFFIStatusCodeR\x04code*0\n\x0fHkFFIStatusCode\
+    \x12\x06\n\x02Ok\x10\0\x12\x07\n\x03Err\x10\x01\x12\x0c\n\x08Internal\
+    \x10\x02b\x06proto3\
 ";
 
 /// `FileDescriptorProto` object which was a source for this generated file
@@ -253,11 +273,12 @@ pub fn file_descriptor() -> &'static ::protobuf::reflect::FileDescriptor {
     static file_descriptor: ::protobuf::rt::Lazy<::protobuf::reflect::FileDescriptor> = ::protobuf::rt::Lazy::new();
     file_descriptor.get(|| {
         let generated_file_descriptor = generated_file_descriptor_lazy.get(|| {
-            let mut deps = ::std::vec::Vec::with_capacity(0);
+            let mut deps = ::std::vec::Vec::with_capacity(1);
+            deps.push(super::ffi_event_type::file_descriptor().clone());
             let mut messages = ::std::vec::Vec::with_capacity(1);
-            messages.push(FFIResponse::generated_message_descriptor_data());
+            messages.push(HkFFIResponse::generated_message_descriptor_data());
             let mut enums = ::std::vec::Vec::with_capacity(1);
-            enums.push(FFIStatusCode::generated_enum_descriptor_data());
+            enums.push(HkFFIStatusCode::generated_enum_descriptor_data());
             ::protobuf::reflect::GeneratedFileDescriptor::new_generated(
                 file_descriptor_proto(),
                 deps,

@@ -1,6 +1,8 @@
 syntax = "proto3";
 
-message FFIRequest {
-    string event = 1;
+import "ffi_event_type.proto";
+
+message HkFFIRequest {
+    HkFFIEventType event = 1;
     bytes payload = 2;
 }
