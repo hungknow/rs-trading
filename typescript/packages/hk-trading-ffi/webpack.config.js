@@ -38,6 +38,9 @@ const config = {
     resolve: {
         extensions: ['.tsx', '.ts', '.jsx', '.js', '...'],
     },
+    experiments: {
+        asyncWebAssembly: true
+    }
 };
 
 module.exports = () => {
