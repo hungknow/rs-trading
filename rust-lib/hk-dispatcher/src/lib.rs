@@ -5,7 +5,7 @@ pub use dispatcher::*;
 mod event_emitter;
 mod message_handler;
 pub use message_handler::*;
-mod wasm;
+// mod wasm;
 mod proto_extend;
 // mod task;
 // pub use task::*;

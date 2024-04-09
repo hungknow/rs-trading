@@ -1,11 +1,22 @@
+use std::{
+    fmt::Debug,
+    future::Future,
+    pin::Pin,
+    task::{ready, Context, Poll},
+};
+
+use pin_project::pin_project;
+
 pub trait HkConcurrent {}
 
 impl<T: ?Sized> HkConcurrent for T {}
 
 pub type HkBoxFuture<'a, T> = Pin<Box<dyn Future<Output = T> + 'a>>;
 
+#[pin_project]
 pub struct HkFutureResult<T, E> {
-    pub fut: Pin<Box<dyn Future<Output = Result<T, e>>>>,
+    #[pin]
+    pub fut: Pin<Box<dyn Future<Output = Result<T, E>>>>,
 }
 
 impl<T, E> HkFutureResult<T, E> {
