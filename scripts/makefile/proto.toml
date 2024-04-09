@@ -2,7 +2,7 @@
 script = '''
     yarn
     protoc --plugin=./node_modules/.bin/protoc-gen-ts_proto \
-        --ts_proto_out=./ts-code \
+        --ts_proto_out=./typescript/packages/hk-trading-ffi/src/protos \
         -I./rust-lib/hk-dispatcher/protos/ \
         $(find ./rust-lib/hk-dispatcher/protos/ -iname "*.proto")
 '''
