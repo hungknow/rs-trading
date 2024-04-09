@@ -1,13 +1,28 @@
 use std::{any::Any, cell::RefCell, rc::Rc};
 
-use hk_dispatcher::{ffi_request::HkFFIRequest, Dispatcher};
+use hk_dispatcher::{
+    ffi_request::HkFFIRequest,
+    ffi_response::{HkFFIResponse, HkFFIStatusCode},
+    Dispatcher,
+};
 use lazy_static::lazy_static;
 use protobuf::Message;
 use wasm_bindgen::prelude::*;
-use wasm_bindgen_futures::{future_to_promise, js_sys};
+use wasm_bindgen_futures::{
+    future_to_promise,
+    js_sys::{self, Uint8Array},
+};
 
 lazy_static! {
     static ref APP_CORE: RefCellAppCore = RefCellAppCore::new();
+}
+
+#[wasm_bindgen]
+extern "C" {
+    #[wasm_bindgen(js_namespace = console)]
+    pub fn log(s: &str);
+    #[wasm_bindgen(js_namespace = window)]
+    fn onHkNotify(event_name: &str, payload: JsValue);
 }
 
 struct RefCellAppCore(RefCell<Option<AppWASMCore>>);
@@ -70,12 +85,20 @@ pub fn async_send_ffi_request(request_bytes: Vec<u8>) -> js_sys::Promise {
                 let future = async move {
                     match dispatcher.dispatch_request(&request).await {
                         Ok(resp) => {
-                            let array_buffer_js = resp.to_string();
-                            Ok(JsValue::from_str(array_buffer_js.as_str()))
+                            let array_buffer_js = resp.write_to_bytes().unwrap();
+                            Ok(unsafe {
+                                js_sys::Uint8Array::new(&Uint8Array::view(&array_buffer_js)).into()
+                            })
                         }
                         Err(err) => {
                             // error!("Error dispatching request: {:?}", err);
-                            Err(JsValue::from_str(&format!("{}", err)))
+                            let mut resp = HkFFIResponse::default();
+                            resp.code = HkFFIStatusCode::Err.into();
+                            resp.payload = format!("{}", err).into_bytes();
+                            let array_buffer_js = resp.write_to_bytes().unwrap();
+                            Err(unsafe {
+                                js_sys::Uint8Array::new(&Uint8Array::view(&array_buffer_js)).into()
+                            })
                         }
                     }
                 };
@@ -101,4 +124,8 @@ fn async_event(event_name: &str, payload: Vec<u8>) -> js_sys::Promise {
     // let request = FFIRequest::from_u8_pointer(input, len).into();
 
     future_to_promise(async { Err(JsValue::from_str("Dispatcher is not initialized")) })
+}
+
+pub fn on_event(event_name: &str, args: JsValue) {
+    onHkNotify(event_name, args);
 }

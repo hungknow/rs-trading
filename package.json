@@ -1,0 +1,11 @@
+{
+  "name": "rs-trading",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:hungknow/rs-trading.git",
+  "author": "hungbuiknow <hungbuiknow@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "ts-proto": "^1.171.0"
+  }
+}
