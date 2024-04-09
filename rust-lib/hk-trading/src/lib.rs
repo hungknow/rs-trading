@@ -2,8 +2,8 @@
 #[macro_use]
 mod test_helper;
 pub mod charts;
-mod core;
 pub mod controls;
+mod core;
 
 // pub mod errors;
 // pub mod event_listener;
@@ -20,3 +20,9 @@ pub use chrono_utils::*;
 mod message_handler;
 
 pub use message_handler::*;
+
+use hk_infra::if_wasm;
+
+if_wasm! {
+    mod wasm;
+}

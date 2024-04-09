@@ -23,6 +23,13 @@ pub struct Dispatcher {
 }
 
 impl Dispatcher {
+    pub fn new() -> Self {
+        Self {
+            // runtime: Arc::new(HkDispatcherRuntime),
+            handlers: Vec::new(),
+        }
+    }
+
     pub fn boxed_async_send_with_callback<Req, Callback>(&self, req: Req, callback: Callback)
     where
         Req: Into<HkFFIRequest> + 'static,

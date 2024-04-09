@@ -1,6 +1,7 @@
 #https://github.com/sagiegurari/cargo-make
 
 extend = [
+  { path = "scripts/makefile/proto.toml" },
   { path = "scripts/makefile/web.toml" },
 ]
 

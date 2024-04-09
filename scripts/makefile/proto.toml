@@ -1,0 +1,8 @@
+[tasks.ts-proto]
+script = '''
+    yarn
+    protoc --plugin=./node_modules/.bin/protoc-gen-ts_proto \
+        --ts_proto_out=./ts-code \
+        -I./rust-lib/hk-dispatcher/protos/ \
+        $(find ./rust-lib/hk-dispatcher/protos/ -iname "*.proto")
+'''

@@ -961,10 +961,14 @@ dependencies = [
  "hk-dispatcher",
  "hk-infra",
  "hktrading-client",
+ "lazy_static",
  "plotters",
+ "protobuf",
  "serde",
  "serde_json",
  "tokio",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
 ]
 
 [[package]]
