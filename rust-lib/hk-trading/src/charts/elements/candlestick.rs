@@ -26,7 +26,9 @@ impl<X, Y: PartialOrd, DB: DrawingBackend> Drawable<DB> for CandleStick<X, Y> {
         todo!();
         // width of candle
         // pixel_of_one_candle * 0.6
-        
+        // open = scale * open + shift
+        //      scale = (- height_in_pixel / (high - low)) 
+        //      shift = (- high * scale)
         Ok(())
     }
 }

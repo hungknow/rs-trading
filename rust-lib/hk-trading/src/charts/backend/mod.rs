@@ -19,6 +19,9 @@ pub trait DrawingBackend: Sized {
     /// The error type reported by the backend
     type ErrorType: Error + Send + Sync;
 
+    /// Get the dimension of the drawing backend in pixels
+    fn get_size(&self) -> (u32, u32);
+
     /// Ensure the backend is ready to draw
     fn ensure_prepared(&mut self) -> Result<(), DrawingErrorKind<Self::ErrorType>>;
 
