@@ -18,3 +18,5 @@ pub struct Grid {
     /// Grid width (without sidebar, px) 
     pub width: i64,
 }
+
+// Grid contains list of Overlays
