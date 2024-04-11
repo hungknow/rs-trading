@@ -3,6 +3,7 @@ use crate::charts::{BackendCoord, DrawingBackend};
 use super::{Drawable, PointCollection};
 
 pub struct CandleStick<X, Y: PartialOrd> {
+    width: u32,
     points: [(X, Y); 4],
 }
 

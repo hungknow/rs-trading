@@ -4,6 +4,8 @@ mod test_helper;
 pub mod charts;
 pub mod controls;
 mod core;
+mod math_utils;
+pub use math_utils::*;
 
 // pub mod errors;
 // pub mod event_listener;

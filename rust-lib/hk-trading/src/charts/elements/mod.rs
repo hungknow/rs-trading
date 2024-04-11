@@ -43,3 +43,7 @@ pub trait PointCollection<'a, Coord, CM = BackendCoordOnly> {
 }
 
 mod candlestick;
+pub use candlestick::*;
+
+mod dynelem;
+pub use dynelem::*;

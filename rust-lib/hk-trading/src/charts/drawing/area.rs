@@ -134,14 +134,14 @@ impl<DB: DrawingBackend, CT: CoordTranslate> DrawingArea<DB, CT> {
 
 #[cfg(test)]
 mod drawing_area_tests {
-    use crate::charts::{drawing::backend_impl::create_mocked_drawing_area, elements::{Drawable, PointCollection}, DrawingBackend};
+    use crate::charts::{drawing::backend_impl::create_mocked_drawing_area, elements::{Drawable, PointCollection}, BackendCoord, DrawingBackend};
 
     struct MockedElement<X, Y> {
         points: [(X, Y); 4],
     }
 
     impl<X, Y, DB: DrawingBackend> Drawable<DB> for MockedElement<X, Y> {
-        fn draw<I: Iterator<Item = <crate::charts::elements::BackendCoordOnly as crate::charts::elements::CoordMapper>::Output>>(
+        fn draw<I: Iterator<Item = BackendCoord>>(
             &self,
             pos: I,
             backend: &mut DB,

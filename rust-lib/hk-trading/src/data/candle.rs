@@ -228,6 +228,20 @@ impl Candles {
         Ok(self)
     }
 
+    pub fn merge_candles(&mut self, candles: &Candles) {
+        for i in 0..candles.open_times.len() {
+            self.push_data_overlapped(
+                candles.open_times[i],
+                candles.opens[i],
+                candles.highs[i],
+                candles.lows[i],
+                candles.closes[i],
+                candles.volumes[i],
+            )
+            .unwrap();
+        }
+    }
+
     #[inline]
     pub fn get_last_close_time(&self) -> Option<DateTime<Utc>> {
         if self.open_times.len() > 0 {
