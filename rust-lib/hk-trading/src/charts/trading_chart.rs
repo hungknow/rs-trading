@@ -8,6 +8,8 @@ use crate::{
     indicators::{ExponentialMovingAverage, IndicatorContainer},
 };
 
+use super::{context::ChartContext, coord::CoordTranslate, DrawingBackend};
+
 pub struct TradingChartData {
     pub display_time_range: (DateTime<Utc>, DateTime<Utc>),
     pub symbol_identity: SymbolIdentity,
@@ -91,6 +93,20 @@ impl TradingChartData {
             calculate_from_to(from, to, self.resolution, self.ohlc_overlay.as_ref());
 
         self.display_time_range = (time_range_from, time_range_to);
+    }
+
+    pub fn draw<'a, DB: DrawingBackend, CT: CoordTranslate>(&mut self, chartContext: &mut ChartContext<'a, DB, CT>) {
+        // Draw ohlc
+        if let Some(ohlc) = self.ohlc_overlay.as_ref() {
+            //TODO: Draw candles
+            // chartContext.draw_series(series)
+        }
+        
+        
+
+        /*
+            Overlays
+         */
     }
 }
 

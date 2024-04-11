@@ -8,7 +8,6 @@ pub struct ChartContext<'a, DB: DrawingBackend, CT: CoordTranslate> {
 }
 
 impl<'a, DB: DrawingBackend, CT: CoordTranslate> ChartContext<'a, DB, CT> {
-
     pub fn draw_series<B, E, R, S>(
         &mut self,
         series: S,

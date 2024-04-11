@@ -11,3 +11,4 @@ pub mod coord;
 pub mod drawing;
 mod context;
 mod overlays;
+pub mod style;
