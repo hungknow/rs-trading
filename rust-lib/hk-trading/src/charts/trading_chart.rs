@@ -1,14 +1,138 @@
+use std::mem::zeroed;
+
+use chrono::{DateTime, Duration, Utc};
+
 use crate::{
-    data::{symbol::SymbolIdentity, Candles},
+    clamp,
+    data::{symbol::SymbolIdentity, Candles, Resolution},
     indicators::{ExponentialMovingAverage, IndicatorContainer},
 };
 
+use super::{context::ChartContext, coord::CoordTranslate, DrawingBackend};
+
 pub struct TradingChartData {
+    pub display_time_range: (DateTime<Utc>, DateTime<Utc>),
     pub symbol_identity: SymbolIdentity,
+    pub resolution: Resolution,
+
+    // Overlays
     pub ohlc_overlay: Option<Box<Candles>>,
     pub ema_overlay: Option<Box<IndicatorContainer<ExponentialMovingAverage>>>,
 }
 
+fn calculate_from_to(
+    from: DateTime<Utc>,
+    to: DateTime<Utc>,
+    resolution: Resolution,
+    ohlc_overlay: Option<&Box<Candles>>,
+) -> (DateTime<Utc>, DateTime<Utc>) {
+    // If there's ohlc data, try to use it to limit the range
+    let min_time = DateTime::<Utc>::from_timestamp(0, 0).unwrap();
+    // 2050-1-1 00:00:00
+    let max_time = DateTime::<Utc>::from_timestamp(2524608000, 0).unwrap();
+
+    let mut max_of_from = max_time;
+    let mut min_of_to = min_time;
+    if let Some(ohlc) = ohlc_overlay {
+        if ohlc.open_times.len() > 1 {
+            let from_time_data = if ohlc.time_desc().unwrap() {
+                *ohlc.open_times.first().unwrap()
+            } else {
+                *ohlc.open_times.last().unwrap()
+            };
+            let to_time_data = if ohlc.time_desc().unwrap() {
+                *ohlc.open_times.last().unwrap()
+            } else {
+                *ohlc.open_times.first().unwrap()
+            };
+
+            let diff_duration = Duration::seconds(resolution.to_seconds() * 5);
+            max_of_from = from_time_data - diff_duration;
+            min_of_to = to_time_data + diff_duration;
+        }
+    }
+    let time_range_from = from.clamp(min_time, max_of_from);
+    let time_range_to = to.clamp(min_of_to, max_time);
+
+    (time_range_from, time_range_to)
+}
+
 impl TradingChartData {
     // pub fn on_range_changed()
+
+    // Pan (start, move, end)
+
+    // Pinch (start, end)
+
+    // Limit crazy wheel delta values
+    fn smart_wheel(delta: f64) -> f64 {
+        let abs = delta.abs();
+        if abs > 500.0 {
+            return (200.0 + abs.ln()) * delta.signum();
+        }
+        return delta;
+    }
+    pub fn mouse_zoom(&mut self, delta: f64) {
+        // let k = self.resolution.to_seconds();
+        // let diff = delta * k * self.ohlc_overlay.unwrap().open_times.len();
+
+        // self.change_display_time_range(self.display_time_range.0 - , to)
+    }
+
+    // Merge the candles into the existing candles, or set it as the current candles if there's none
+    pub fn push_candles(&mut self, new_candles: &Candles) {
+        if let Some(candles) = self.ohlc_overlay.as_mut() {
+            candles.merge_candles(new_candles);
+        } else {
+            self.ohlc_overlay = Some(Box::new(new_candles.clone()));
+        }
+    }
+
+    pub fn change_display_time_range(&mut self, from: DateTime<Utc>, to: DateTime<Utc>) {
+        let (time_range_from, time_range_to) =
+            calculate_from_to(from, to, self.resolution, self.ohlc_overlay.as_ref());
+
+        self.display_time_range = (time_range_from, time_range_to);
+    }
+
+    pub fn draw<'a, DB: DrawingBackend, CT: CoordTranslate>(&mut self, chartContext: &mut ChartContext<'a, DB, CT>) {
+        // Draw ohlc
+        if let Some(ohlc) = self.ohlc_overlay.as_ref() {
+            //TODO: Draw candles
+            // chartContext.draw_series(series)
+        }
+        
+        
+
+        /*
+            Overlays
+         */
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_calculate_from_to() {
+        let resolution_5m_seconds = Resolution::M5.to_seconds();
+        let (from, to) = calculate_from_to(
+            DateTime::<Utc>::from_timestamp(0, 0).unwrap(),
+            DateTime::<Utc>::from_timestamp(0, 0).unwrap(),
+            Resolution::M5,
+            None,
+        );
+        assert_eq!(from, DateTime::<Utc>::from_timestamp(0, 0).unwrap());
+        assert_eq!(to, DateTime::<Utc>::from_timestamp(0, 0).unwrap());
+
+        let (from, to) = calculate_from_to(
+            DateTime::<Utc>::from_timestamp(1000, 0).unwrap(),
+            DateTime::<Utc>::from_timestamp(2000, 0).unwrap(),
+            Resolution::M5,
+            None,
+        );
+        assert_eq!(from, DateTime::<Utc>::from_timestamp(1000 + resolution_5m_seconds * 5, 0).unwrap());
+        assert_eq!(to, DateTime::<Utc>::from_timestamp(0, 0).unwrap());
+    }
 }

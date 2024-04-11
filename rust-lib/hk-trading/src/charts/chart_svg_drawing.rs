@@ -1,6 +1,7 @@
 use hk_infra::{future::HkFutureResult, HkError};
 
 use super::TradingChartData;
+
 pub struct ChartSVGDrawingContext<'a> {
     pub width: u32,
     pub height: u32,

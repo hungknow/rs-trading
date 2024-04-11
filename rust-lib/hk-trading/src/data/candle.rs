@@ -169,7 +169,8 @@ impl Candles {
             None => {
                 if self.open_times.len() >= 2 {
                     return Err(HkError::HkDataError(
-                        "push_data_non_overlapped: failed to detect the time order for candles".to_owned(),
+                        "push_data_non_overlapped: failed to detect the time order for candles"
+                            .to_owned(),
                     ));
                 }
             }
@@ -228,6 +229,20 @@ impl Candles {
         Ok(self)
     }
 
+    pub fn merge_candles(&mut self, candles: &Candles) {
+        for i in 0..candles.open_times.len() {
+            self.push_data_overlapped(
+                candles.open_times[i],
+                candles.opens[i],
+                candles.highs[i],
+                candles.lows[i],
+                candles.closes[i],
+                candles.volumes[i],
+            )
+            .unwrap();
+        }
+    }
+
     #[inline]
     pub fn get_last_close_time(&self) -> Option<DateTime<Utc>> {
         if self.open_times.len() > 0 {
@@ -243,6 +258,37 @@ impl Candles {
             Some(self.open_times[self.open_times.len() - 1])
         } else {
             None
+        }
+    }
+
+    #[inline(always)]
+    pub fn find_open_time_index(&self, open_time: DateTime<Utc>) -> Option<usize> {
+        self.open_times.iter().position(|&r| r == open_time)
+    }
+
+    pub fn find_open_time_index_or_first(&self, open_time: DateTime<Utc>) -> Option<usize> {
+        match self.find_open_time_index(open_time) {
+            Some(index) => Some(index),
+            None => {
+                if self.open_times.len() > 0 {
+                    Some(0)
+                } else {
+                    None
+                }
+            }
+        }
+    }
+    pub fn find_open_time_index_or_last(&self, open_time: DateTime<Utc>) -> Option<usize> {
+        match self.find_open_time_index(open_time) {
+            Some(index) => Some(index),
+            None => {
+                let open_time_len = self.open_times.len();
+                if open_time_len > 0 {
+                    Some(open_time_len - 1)
+                } else {
+                    None
+                }
+            }
         }
     }
 }
