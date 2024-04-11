@@ -5,8 +5,8 @@ use crate::charts::{style::ShapeStyle, BackendCoord, DrawingBackend};
 use super::{Drawable, PointCollection};
 
 pub struct CandleStick<X, Y: PartialOrd> {
-    style: ShapeStyle,
-    width: u32,
+    pub(crate) style: ShapeStyle,
+    pub(crate) width: u32,
     points: [(X, Y); 4],
 }
 

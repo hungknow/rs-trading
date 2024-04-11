@@ -261,7 +261,7 @@ impl Candles {
         }
     }
 
-    #[inline]
+    #[inline(always)]
     pub fn find_open_time_index(&self, open_time: DateTime<Utc>) -> Option<usize> {
         self.open_times.iter().position(|&r| r == open_time)
     }
@@ -282,8 +282,9 @@ impl Candles {
         match self.find_open_time_index(open_time) {
             Some(index) => Some(index),
             None => {
-                if self.open_times.len() > 0 {
-                    Some(self.open_times.len() - 1)
+                let open_time_len = self.open_times.len();
+                if open_time_len > 0 {
+                    Some(open_time_len - 1)
                 } else {
                     None
                 }
