@@ -135,6 +135,12 @@ impl<Z: TimeZone> TimeValue for DateTime<Z> {
 #[derive(Clone)]
 pub struct RangedDate<D: Datelike>(D, D);
 
+impl<D: Datelike> From<Range<D>> for RangedDate<D> {
+    fn from(range: Range<D>) -> Self {
+        Self(range.start, range.end)
+    }
+}
+
 impl<D> Ranged for RangedDate<D>
 where
     D: Datelike + TimeValue + Sub<D, Output = Duration> + Add<Duration, Output = D> + Clone,
@@ -197,6 +203,11 @@ pub struct RangedDateTime<DT: Datelike + Timelike + TimeValue>(DT, DT);
 //     type Value = DateTime<Z>;
 // }
 
+impl<Z: TimeZone> From<Range<DateTime<Z>>> for RangedDateTime<DateTime<Z>> {
+    fn from(range: Range<DateTime<Z>>) -> Self {
+        Self(range.start, range.end)
+    }
+}
 
 impl<DT> Ranged for RangedDateTime<DT>
 where

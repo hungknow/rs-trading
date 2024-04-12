@@ -111,7 +111,7 @@ impl<DB: DrawingBackend>
     ) -> Result<(), DrawingAreaErrorKind<DB::ErrorType>> {
         // Draw ohlc
         let candlesticks = self.candlesticks.to_vec();
-        chart_context.draw_series(candlesticks).unwrap();
+        chart_context.draw_series(candlesticks)?;
 
         Ok(())
     }
