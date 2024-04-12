@@ -4,6 +4,7 @@ use crate::charts::{style::ShapeStyle, BackendCoord, DrawingBackend};
 
 use super::{Drawable, PointCollection};
 
+#[derive(Clone)]
 pub struct CandleStick<X, Y: PartialOrd> {
     pub(crate) style: ShapeStyle,
     pub(crate) width: u32,
