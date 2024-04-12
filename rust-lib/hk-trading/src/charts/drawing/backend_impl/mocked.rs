@@ -105,28 +105,6 @@ impl DrawingBackend for MockedBackend {
     }
 }
 
-// pub fn create_mocked_chart_context<CT: CoordTranslate>(
-//     width: u32,
-//     height: u32,
-//     ct: CT,
-// ) -> ChartContext<'static, MockedBackend, CT> {
-//     let mut backend = MockedBackend::new(width, height);
-
-//     ChartContext {
-//         drawing_area: DrawingArea {
-//             backend: Rc::new(RefCell::new(backend)),
-//             rect: Rect {
-//                 x0: 0 as i32,
-//                 y0: 0 as i32,
-//                 x1: width as i32,
-//                 y1: height as i32,
-//             },
-//             coord: ct,
-//         },
-//         series_anno: vec![],
-//     }
-// }
-
 pub fn create_mocked_drawing_area<F: FnOnce(&mut MockedBackend)>(
     width: u32,
     height: u32,

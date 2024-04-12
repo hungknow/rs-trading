@@ -93,11 +93,6 @@ impl TradingChartData {
             .unwrap()
             .candles
             .merge_candles(new_candles);
-        // if let Some(candles) = self.ohlc_overlay {
-        //     candles.merge_candles(new_candles);
-        // } else {
-        //     self.ohlc_overlay = Some(Box::new(new_candles.clone()));
-        // }
     }
 
     pub fn change_display_time_range(&mut self, from: DateTime<Utc>, to: DateTime<Utc>) {
