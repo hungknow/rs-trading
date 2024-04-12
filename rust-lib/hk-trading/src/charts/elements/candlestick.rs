@@ -63,17 +63,29 @@ impl<'a, X: 'a, Y: PartialOrd + 'a> PointCollection<'a, (X, Y)> for &'a CandleSt
 impl<X, Y: PartialOrd, DB: DrawingBackend> Drawable<DB> for CandleStick<X, Y> {
     fn draw<I: Iterator<Item = BackendCoord>>(
         &self,
-        pos: I,
+        points: I,
         backend: &mut DB,
         parent_dim: (u32, u32),
     ) -> Result<(), crate::charts::DrawingErrorKind<<DB as DrawingBackend>::ErrorType>> {
-        // backend.draw_line(from, to, style)
-        todo!();
-        // width of candle
-        // pixel_of_one_candle * 0.6
-        // open = scale * open + shift
-        //      scale = (- height_in_pixel / (high - low))
-        //      shift = (- high * scale)
+        let mut points: Vec<_> = points.take(4).collect();
+        if points.len() == 4 {
+            let fill = self.style.filled;
+            if points[0].1 > points[3].1 {
+                points.swap(0, 3);
+            }
+            let (l, r) = (
+                self.width as i32 / 2,
+                self.width as i32 - self.width as i32 / 2,
+            );
+
+            backend.draw_line(points[0], points[1], &self.style)?;
+            backend.draw_line(points[2], points[3], &self.style)?;
+
+            points[0].0 -= l;
+            points[3].0 += r;
+
+            backend.draw_rect(points[0], points[3], &self.style, fill)?;
+        }
         Ok(())
     }
 }

@@ -47,3 +47,8 @@ pub use candlestick::*;
 
 mod dynelem;
 pub use dynelem::*;
+
+#[cfg(test)]
+mod mocked_element;
+#[cfg(test)]
+pub use mocked_element::*;

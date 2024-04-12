@@ -136,7 +136,10 @@ impl TradingChartData {
 
 #[cfg(test)]
 mod tests {
-    use crate::charts::drawing::{create_mocked_drawing_area, MockedBackend};
+    use crate::charts::{
+        drawing::{create_mocked_drawing_area, MockedBackend},
+        elements::MockedElement,
+    };
 
     use super::*;
 
@@ -176,21 +179,43 @@ mod tests {
         };
         // prepare ohlc data
         let from_time = DateTime::<Utc>::from_timestamp(0, 0).unwrap();
-        let to_time = DateTime::<Utc>::from_timestamp(1000, 0).unwrap();
+        let to_time = DateTime::<Utc>::from_timestamp(2, 0).unwrap();
+        let mut candles = Candles::new();
+        candles
+            .push_data_non_overlapped(
+                DateTime::<Utc>::from_timestamp(0, 0).unwrap(),
+                0.0,
+                10.0,
+                5.0,
+                0.0,
+                None,
+            )
+            .unwrap();
+        candles
+            .push_data_non_overlapped(
+                DateTime::<Utc>::from_timestamp(1, 0).unwrap(),
+                0.0,
+                200.0,
+                100.0,
+                0.0,
+                None,
+            )
+            .unwrap();
+        trading_chart.ohlc_overlay = Some(Box::new(Ohlcs::new(candles)));
 
         // create backend for drawing
-        let mut mocked_backend =
-            create_mocked_drawing_area(1000, 500, |_| {}).apply_coord_spec(Cartesian2d::<
-                RangedDateTime<DateTime<Utc>>,
-                RangedCoordf64,
-            >::new(
-                from_time..to_time,
-                0.0..200.0,
-                (0..1024, 0..768),
-            ));
+        let mut mocked_drawing_area = create_mocked_drawing_area(1000, 500, |_| {})
+            .apply_coord_spec(
+                Cartesian2d::<RangedDateTime<DateTime<Utc>>, RangedCoordf64>::new(
+                    from_time..to_time,
+                    0.0..200.0,
+                    (0..1024, 0..768),
+                ),
+            );
+
         // create chart context
-        let mut chart_context = ChartContext{
-            drawing_area: mocked_backend,
+        let mut chart_context = ChartContext {
+            drawing_area: mocked_drawing_area,
             series_anno: vec![],
         };
         // draw

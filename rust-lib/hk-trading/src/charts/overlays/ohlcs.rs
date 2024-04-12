@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::{ops::Deref, rc::Rc};
 
 use chrono::{DateTime, Utc};
 
@@ -31,13 +31,25 @@ pub struct Ohlcs {
 }
 
 impl Ohlcs {
-    pub fn new() -> Self {
+    pub fn new(candles: Candles) -> Self {
+        if candles.open_times.is_empty() {
+            return Self {
+                candles: candles,
+                from_time: None,
+                to_time: None,
+                drawing_area_width: 0,
+                candlesticks: Rc::new(vec![]),
+            };
+        }
+        let from_time = *candles.open_times.first().unwrap();
+        let to_time = *candles.open_times.last().unwrap();
+        let candlesticks = Self::get_ohlcs(from_time, to_time, &candles, 400);
         Self {
-            candles: Candles::new(),
-            from_time: None,
-            to_time: None,
+            candles: candles,
+            from_time: Some(from_time),
+            to_time: Some(to_time),
             drawing_area_width: 0,
-            candlesticks: Rc::new(vec![]),
+            candlesticks: Rc::new(candlesticks),
         }
     }
 
@@ -57,17 +69,21 @@ impl Ohlcs {
         }
 
         // calculate new ohlcs
-        let candlesticks = Rc::new(self.get_ohlcs(from_time, to_time, candles, drawing_area_width));
+        let candlesticks = Rc::new(Self::get_ohlcs(
+            from_time,
+            to_time,
+            &candles,
+            drawing_area_width,
+        ));
         self.candlesticks = candlesticks.clone();
 
         candlesticks
     }
 
     pub fn get_ohlcs(
-        &self,
         from_time: DateTime<Utc>,
         to_time: DateTime<Utc>,
-        candles: Candles,
+        candles: &Candles,
         drawing_area_width: u32,
     ) -> Vec<CandleStick<DateTime<Utc>, f64>> {
         let candle_resolution_seconds = candles.resolution().unwrap().to_seconds();
@@ -125,7 +141,7 @@ mod tests {
 
     #[test]
     fn test_get_ohlcs() {
-        let ohlcs = Ohlcs::new();
+        let ohlcs = Ohlcs::new(Candles::new());
         let bar_count = 10;
         let drawing_area_width = 400;
         let expected_candle_width = 21; // (400 / (10 + 1)) * 0.6 = 21
@@ -138,7 +154,7 @@ mod tests {
             let open_time = DateTime::<Utc>::from_timestamp(resolution_seconds * i, 0).unwrap();
             let _ = candles.push_data_non_overlapped(open_time, 0.0, 0.0, 0.0, 0.0, None);
         }
-        let candlesticks = ohlcs.get_ohlcs(from_time, to_time, candles, drawing_area_width);
+        let candlesticks = Ohlcs::get_ohlcs(from_time, to_time, &candles, drawing_area_width);
         assert_eq!(candlesticks.len(), bar_count as usize);
         for candlestick in candlesticks {
             assert_eq!(candlestick.width, expected_candle_width);

@@ -1,3 +1,5 @@
+use crate::charts::{BackendColor, BackendStyle};
+
 use super::color::{Color, RGBAColor};
 
 /// Style for any shape
@@ -28,5 +30,16 @@ impl<T: Color> From<T> for ShapeStyle {
             filled: false,
             stroke_width: 1,
         }
+    }
+}
+
+impl BackendStyle for ShapeStyle {
+    /// Returns the color as interpreted by the backend.
+    fn color(&self) -> BackendColor {
+        self.color.to_backend_color()
+    }
+    /// Returns the stroke width.
+    fn stroke_width(&self) -> u32 {
+        self.stroke_width
     }
 }
