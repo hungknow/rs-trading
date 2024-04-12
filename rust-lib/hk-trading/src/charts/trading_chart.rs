@@ -1,22 +1,29 @@
-use std::mem::zeroed;
-
+use crate::charts::overlays::OverlayDrawing;
 use chrono::{DateTime, Duration, Utc};
 
 use crate::{
-    clamp,
     data::{symbol::SymbolIdentity, Candles, Resolution},
     indicators::{ExponentialMovingAverage, IndicatorContainer},
 };
 
-use super::{context::ChartContext, coord::CoordTranslate, DrawingBackend};
+use super::{
+    context::ChartContext,
+    coord::{
+        cartesian::Cartesian2d,
+        types::{RangedCoordf64, RangedDateTime},
+    },
+    drawing::DrawingAreaErrorKind,
+    overlays::ohlcs::Ohlcs,
+    DrawingBackend,
+};
 
 pub struct TradingChartData {
-    pub display_time_range: (DateTime<Utc>, DateTime<Utc>),
-    pub symbol_identity: SymbolIdentity,
-    pub resolution: Resolution,
+    pub display_time_range: Option<(DateTime<Utc>, DateTime<Utc>)>,
+    pub symbol_identity: Option<SymbolIdentity>,
+    pub resolution: Option<Resolution>,
 
     // Overlays
-    pub ohlc_overlay: Option<Box<Candles>>,
+    pub ohlc_overlay: Option<Box<Ohlcs>>,
     pub ema_overlay: Option<Box<IndicatorContainer<ExponentialMovingAverage>>>,
 }
 
@@ -24,7 +31,7 @@ fn calculate_from_to(
     from: DateTime<Utc>,
     to: DateTime<Utc>,
     resolution: Resolution,
-    ohlc_overlay: Option<&Box<Candles>>,
+    ohlc_overlay: Option<&Box<Ohlcs>>,
 ) -> (DateTime<Utc>, DateTime<Utc>) {
     // If there's ohlc data, try to use it to limit the range
     let min_time = DateTime::<Utc>::from_timestamp(0, 0).unwrap();
@@ -34,16 +41,16 @@ fn calculate_from_to(
     let mut max_of_from = max_time;
     let mut min_of_to = min_time;
     if let Some(ohlc) = ohlc_overlay {
-        if ohlc.open_times.len() > 1 {
-            let from_time_data = if ohlc.time_desc().unwrap() {
-                *ohlc.open_times.first().unwrap()
+        if ohlc.candles.open_times.len() > 1 {
+            let from_time_data = if ohlc.candles.time_desc().unwrap() {
+                *ohlc.candles.open_times.first().unwrap()
             } else {
-                *ohlc.open_times.last().unwrap()
+                *ohlc.candles.open_times.last().unwrap()
             };
-            let to_time_data = if ohlc.time_desc().unwrap() {
-                *ohlc.open_times.last().unwrap()
+            let to_time_data = if ohlc.candles.time_desc().unwrap() {
+                *ohlc.candles.open_times.last().unwrap()
             } else {
-                *ohlc.open_times.first().unwrap()
+                *ohlc.candles.open_times.first().unwrap()
             };
 
             let diff_duration = Duration::seconds(resolution.to_seconds() * 5);
@@ -81,37 +88,54 @@ impl TradingChartData {
 
     // Merge the candles into the existing candles, or set it as the current candles if there's none
     pub fn push_candles(&mut self, new_candles: &Candles) {
-        if let Some(candles) = self.ohlc_overlay.as_mut() {
-            candles.merge_candles(new_candles);
-        } else {
-            self.ohlc_overlay = Some(Box::new(new_candles.clone()));
-        }
+        self.ohlc_overlay
+            .as_mut()
+            .unwrap()
+            .candles
+            .merge_candles(new_candles);
     }
 
     pub fn change_display_time_range(&mut self, from: DateTime<Utc>, to: DateTime<Utc>) {
-        let (time_range_from, time_range_to) =
-            calculate_from_to(from, to, self.resolution, self.ohlc_overlay.as_ref());
+        let (time_range_from, time_range_to) = calculate_from_to(
+            from,
+            to,
+            self.resolution.unwrap(),
+            self.ohlc_overlay.as_ref(),
+        );
 
-        self.display_time_range = (time_range_from, time_range_to);
+        self.display_time_range = Some((time_range_from, time_range_to));
     }
 
-    pub fn draw<'a, DB: DrawingBackend, CT: CoordTranslate>(&mut self, chartContext: &mut ChartContext<'a, DB, CT>) {
+    pub fn draw<'a, DB>(
+        &mut self,
+        chart_context: &mut ChartContext<
+            'a,
+            DB,
+            Cartesian2d<RangedDateTime<DateTime<Utc>>, RangedCoordf64>,
+        >,
+    ) -> Result<(), DrawingAreaErrorKind<DB::ErrorType>>
+    where
+        DB: DrawingBackend,
+    {
         // Draw ohlc
-        if let Some(ohlc) = self.ohlc_overlay.as_ref() {
-            //TODO: Draw candles
-            // chartContext.draw_series(series)
+        if let Some(ohlc_overlay) = self.ohlc_overlay.as_mut() {
+            ohlc_overlay.draw(chart_context)?;
         }
-        
-        
 
         /*
-            Overlays
-         */
+           Overlays
+        */
+        Ok(())
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use crate::charts::{
+        drawing::{create_mocked_drawing_area, MockedBackend},
+        elements::MockedElement,
+    };
+
     use super::*;
 
     #[test]
@@ -132,7 +156,64 @@ mod tests {
             Resolution::M5,
             None,
         );
-        assert_eq!(from, DateTime::<Utc>::from_timestamp(1000 + resolution_5m_seconds * 5, 0).unwrap());
+        assert_eq!(
+            from,
+            DateTime::<Utc>::from_timestamp(1000 + resolution_5m_seconds * 5, 0).unwrap()
+        );
         assert_eq!(to, DateTime::<Utc>::from_timestamp(0, 0).unwrap());
+    }
+
+    #[test]
+    fn test_draw() {
+        let mut trading_chart = TradingChartData {
+            display_time_range: None,
+            symbol_identity: None,
+            resolution: None,
+            ohlc_overlay: None,
+            ema_overlay: None,
+        };
+        // prepare ohlc data
+        let from_time = DateTime::<Utc>::from_timestamp(0, 0).unwrap();
+        let to_time = DateTime::<Utc>::from_timestamp(2, 0).unwrap();
+        let mut candles = Candles::new();
+        candles
+            .push_data_non_overlapped(
+                DateTime::<Utc>::from_timestamp(0, 0).unwrap(),
+                0.0,
+                10.0,
+                5.0,
+                0.0,
+                None,
+            )
+            .unwrap();
+        candles
+            .push_data_non_overlapped(
+                DateTime::<Utc>::from_timestamp(1, 0).unwrap(),
+                0.0,
+                200.0,
+                100.0,
+                0.0,
+                None,
+            )
+            .unwrap();
+        trading_chart.ohlc_overlay = Some(Box::new(Ohlcs::new(candles)));
+
+        // create backend for drawing
+        let mut mocked_drawing_area = create_mocked_drawing_area(1000, 500, |_| {})
+            .apply_coord_spec(
+                Cartesian2d::<RangedDateTime<DateTime<Utc>>, RangedCoordf64>::new(
+                    from_time..to_time,
+                    0.0..200.0,
+                    (0..1024, 0..768),
+                ),
+            );
+
+        // create chart context
+        let mut chart_context = ChartContext {
+            drawing_area: mocked_drawing_area,
+            series_anno: vec![],
+        };
+        // draw
+        trading_chart.draw(&mut chart_context).unwrap();
     }
 }

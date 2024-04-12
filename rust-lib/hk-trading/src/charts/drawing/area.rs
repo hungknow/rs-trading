@@ -1,9 +1,9 @@
 use crate::charts::{
-    coord::{CoordTranslate, Shift},
+    coord::{cartesian::Cartesian2d, ranged1d::Ranged, CoordTranslate, Shift},
     elements::{CoordMapper, Drawable, PointCollection},
     DrawingBackend, DrawingErrorKind,
 };
-use std::borrow::Borrow;
+use std::{borrow::Borrow, ops::Range};
 use std::{cell::RefCell, error::Error, rc::Rc};
 
 /// The representation of the rectangle in backend canvas
@@ -28,14 +28,10 @@ impl Rect {
 /// 2. Coordinate Translation - Allows guest coordinate system attached and used for drawing.
 /// 3. Element based drawing - drawing area provides the environment the element can be drawn onto it.
 pub struct DrawingArea<DB: DrawingBackend, CT: CoordTranslate> {
-    backend: Rc<RefCell<DB>>,
-    rect: Rect,
-    coord: CT,
+    pub(crate) backend: Rc<RefCell<DB>>,
+    pub(crate) rect: Rect,
+    pub(crate) coord: CT,
 }
-
-// pub struct DrawingAreaState {
-
-// }
 
 /// The error description of any drawing area API
 #[derive(Debug)]
@@ -52,20 +48,35 @@ pub enum DrawingAreaErrorKind<E: Error + Send + Sync> {
 
 type DrawingAreaError<T: DrawingBackend> = DrawingAreaErrorKind<T::ErrorType>;
 
+// impl<DB: DrawingBackend, X: Ranged, Y: Ranged> From<DB> for DrawingArea<DB, Cartesian2d<X, Y>> {
+//     fn from(backend: DB) -> Self {
+//         Self::with_rc_cell(Rc::new(RefCell::new(backend)))
+//     }
+// }
+
 impl<DB: DrawingBackend> From<DB> for DrawingArea<DB, Shift> {
     fn from(backend: DB) -> Self {
         Self::with_rc_cell(Rc::new(RefCell::new(backend)))
     }
 }
 
-/// A type which can be converted into a root drawing area
-pub trait IntoDrawingArea: DrawingBackend + Sized {
-    /// Convert the type into a root drawing area
-    fn into_drawing_area(self) -> DrawingArea<Self, Shift>;
+impl<'a, DB: DrawingBackend> From<&'a Rc<RefCell<DB>>> for DrawingArea<DB, Shift> {
+    fn from(backend: &'a Rc<RefCell<DB>>) -> Self {
+        Self::with_rc_cell(backend.clone())
+    }
 }
 
-impl<T: DrawingBackend> IntoDrawingArea for T {
-    fn into_drawing_area(self) -> DrawingArea<T, Shift> {
+/// A type which can be converted into a root drawing area
+pub trait IntoDrawingArea<CT: CoordTranslate>: DrawingBackend + Sized {
+    /// Convert the type into a root drawing area
+    fn into_drawing_area(self) -> DrawingArea<Self, CT>;
+}
+
+impl<T: DrawingBackend, CT: CoordTranslate> IntoDrawingArea<CT> for T
+where
+    DrawingArea<T, CT>: From<T>,
+{
+    fn into_drawing_area(self) -> DrawingArea<T, CT> {
         self.into()
     }
 }
@@ -83,6 +94,53 @@ impl<DB: DrawingBackend> DrawingArea<DB, Shift> {
             backend,
             coord: Shift((0, 0)),
         }
+    }
+
+    /// Apply a new coord transformation object and returns a new drawing area
+    pub fn apply_coord_spec<CT: CoordTranslate>(&self, coord_spec: CT) -> DrawingArea<DB, CT> {
+        DrawingArea {
+            rect: self.rect.clone(),
+            backend: self.backend.clone(),
+            coord: coord_spec,
+        }
+    }
+}
+
+impl<DB: DrawingBackend, X: Ranged, Y: Ranged> DrawingArea<DB, Cartesian2d<X, Y>> {
+    /// Draw the mesh on a area
+    // pub fn draw_mesh<DrawFunc, YH: KeyPointHint, XH: KeyPointHint>(
+    //     &self,
+    //     mut draw_func: DrawFunc,
+    //     y_count_max: YH,
+    //     x_count_max: XH,
+    // ) -> Result<(), DrawingAreaErrorKind<DB::ErrorType>>
+    // where
+    //     DrawFunc: FnMut(&mut DB, MeshLine<X, Y>) -> Result<(), DrawingErrorKind<DB::ErrorType>>,
+    // {
+    //     self.backend_ops(move |b| {
+    //         self.coord
+    //             .draw_mesh(y_count_max, x_count_max, |line| draw_func(b, line))
+    //     })
+    // }
+
+    /// Get the range of X of the guest coordinate for current drawing area
+    pub fn get_x_range(&self) -> Range<X::ValueType> {
+        self.coord.get_x_range()
+    }
+
+    /// Get the range of Y of the guest coordinate for current drawing area
+    pub fn get_y_range(&self) -> Range<Y::ValueType> {
+        self.coord.get_y_range()
+    }
+
+    /// Get the range of X of the backend coordinate for current drawing area
+    pub fn get_x_axis_pixel_range(&self) -> Range<i32> {
+        self.coord.get_x_axis_pixel_range()
+    }
+
+    /// Get the range of Y of the backend coordinate for current drawing area
+    pub fn get_y_axis_pixel_range(&self) -> Range<i32> {
+        self.coord.get_y_axis_pixel_range()
     }
 }
 
@@ -134,7 +192,11 @@ impl<DB: DrawingBackend, CT: CoordTranslate> DrawingArea<DB, CT> {
 
 #[cfg(test)]
 mod drawing_area_tests {
-    use crate::charts::{drawing::backend_impl::create_mocked_drawing_area, elements::{Drawable, PointCollection}, BackendCoord, DrawingBackend};
+    use crate::charts::{
+        drawing::backend_impl::create_mocked_drawing_area,
+        elements::{Drawable, PointCollection},
+        BackendCoord, DrawingBackend,
+    };
 
     struct MockedElement<X, Y> {
         points: [(X, Y); 4],
@@ -146,7 +208,8 @@ mod drawing_area_tests {
             pos: I,
             backend: &mut DB,
             parent_dim: (u32, u32),
-        ) -> Result<(), crate::charts::DrawingErrorKind<<DB as DrawingBackend>::ErrorType>> {
+        ) -> Result<(), crate::charts::DrawingErrorKind<<DB as DrawingBackend>::ErrorType>>
+        {
             Ok(())
         }
     }
@@ -154,7 +217,7 @@ mod drawing_area_tests {
     impl<'a, X: 'a, Y: PartialOrd + 'a> PointCollection<'a, (X, Y)> for &'a MockedElement<X, Y> {
         type Point = &'a (X, Y);
         type IntoIter = &'a [(X, Y)];
-    
+
         fn point_iter(self) -> Self::IntoIter {
             &self.points
         }
@@ -162,7 +225,7 @@ mod drawing_area_tests {
 
     #[test]
     fn test_draw() {
-        let drawing_area = create_mocked_drawing_area(100, 100);
+        let drawing_area = create_mocked_drawing_area(100, 100, |m| {});
         let element = &MockedElement::<i32, i32> {
             points: [(0, 0), (1, 1), (2, 2), (3, 3)],
         };

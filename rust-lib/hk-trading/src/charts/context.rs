@@ -1,6 +1,12 @@
 use std::borrow::Borrow;
 
-use super::{coord::CoordTranslate, drawing::{DrawingArea, DrawingAreaErrorKind}, elements::{CoordMapper, Drawable, PointCollection}, overlays::SeriesAnno, DrawingBackend};
+use super::{
+    coord::CoordTranslate,
+    drawing::{DrawingArea, DrawingAreaErrorKind},
+    elements::{CoordMapper, Drawable, PointCollection},
+    overlays::SeriesAnno,
+    DrawingBackend,
+};
 
 pub struct ChartContext<'a, DB: DrawingBackend, CT: CoordTranslate> {
     pub(crate) drawing_area: DrawingArea<DB, CT>,
@@ -12,7 +18,7 @@ impl<'a, DB: DrawingBackend, CT: CoordTranslate> ChartContext<'a, DB, CT> {
         &mut self,
         series: S,
     ) -> Result<&mut SeriesAnno<'a, DB>, DrawingAreaErrorKind<DB::ErrorType>>
-    where 
+    where
         B: CoordMapper,
         for<'b> &'b E: PointCollection<'b, CT::From, B>,
         E: Drawable<DB, B>,
@@ -30,5 +36,4 @@ impl<'a, DB: DrawingBackend, CT: CoordTranslate> ChartContext<'a, DB, CT> {
         self.series_anno.push(SeriesAnno::new());
         &mut self.series_anno[idx]
     }
-
 }

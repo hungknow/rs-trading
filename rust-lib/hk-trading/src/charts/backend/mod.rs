@@ -33,4 +33,19 @@ pub trait DrawingBackend: Sized {
     ) -> Result<(), DrawingErrorKind<Self::ErrorType>> {
         todo!("draw_line")
     }
+
+    /// Draw a rectangle on the drawing backend
+    /// - `upper_left`: The coordinate of the upper-left corner of the rect
+    /// - `bottom_right`: The coordinate of the bottom-right corner of the rect
+    /// - `style`: The style
+    /// - `fill`: If the rectangle should be filled
+    fn draw_rect<S: BackendStyle>(
+        &mut self,
+        upper_left: BackendCoord,
+        bottom_right: BackendCoord,
+        style: &S,
+        fill: bool,
+    ) -> Result<(), DrawingErrorKind<Self::ErrorType>> {
+        todo!("draw_rect")
+    }
 }
