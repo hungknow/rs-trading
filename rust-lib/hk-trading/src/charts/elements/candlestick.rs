@@ -73,16 +73,25 @@ impl<X, Y: PartialOrd, DB: DrawingBackend> Drawable<DB> for CandleStick<X, Y> {
             if points[0].1 > points[3].1 {
                 points.swap(0, 3);
             }
-            let (l, r) = (
-                self.width as i32 / 2,
-                self.width as i32 - self.width as i32 / 2,
-            );
+            let l = self.width as i32 / 2;
+            // The left and right of the same width
+            let r = l;//self.width as i32 - l;
+
+            // Push the candlestick to the half width
+            for p in points.iter_mut() {
+                p.0 += l;
+            }
 
             backend.draw_line(points[0], points[1], &self.style)?;
             backend.draw_line(points[2], points[3], &self.style)?;
 
             points[0].0 -= l;
             points[3].0 += r;
+
+            // If the open == close, we need to make sure the candlestick is visible
+            if points[0].1 == points[3].1 {
+                points[3].1 += 1;
+            }
 
             backend.draw_rect(points[0], points[3], &self.style, fill)?;
         }
