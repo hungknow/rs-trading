@@ -2,7 +2,7 @@ use std::ops::{Add, Range, Sub};
 
 use chrono::{Date, DateTime, Datelike, Duration, TimeZone, Timelike};
 
-use crate::charts::coord::ranged1d::{DefaultFormatting, KeyPointHint, Ranged};
+use crate::charts::coord::ranged1d::{AsRangedCoord, DefaultFormatting, KeyPointHint, Ranged};
 
 /// The trait that describe some time value. This is the uniformed abstraction that works
 /// for both Date, DateTime and Duration, etc.
@@ -141,6 +141,11 @@ impl<D: Datelike> From<Range<D>> for RangedDate<D> {
     }
 }
 
+impl<Z: TimeZone> AsRangedCoord for Range<Date<Z>> {
+    type CoordDescType = RangedDate<Date<Z>>;
+    type Value = Date<Z>;
+}
+
 impl<D> Ranged for RangedDate<D>
 where
     D: Datelike + TimeValue + Sub<D, Output = Duration> + Add<Duration, Output = D> + Clone,
@@ -198,10 +203,10 @@ where
 #[derive(Clone)]
 pub struct RangedDateTime<DT: Datelike + Timelike + TimeValue>(DT, DT);
 
-// impl<Z: TimeZone> AsRangedCoord for Range<DateTime<Z>> {
-//     type CoordDescType = RangedDateTime<DateTime<Z>>;
-//     type Value = DateTime<Z>;
-// }
+impl<Z: TimeZone> AsRangedCoord for Range<DateTime<Z>> {
+    type CoordDescType = RangedDateTime<DateTime<Z>>;
+    type Value = DateTime<Z>;
+}
 
 impl<Z: TimeZone> From<Range<DateTime<Z>>> for RangedDateTime<DateTime<Z>> {
     fn from(range: Range<DateTime<Z>>) -> Self {

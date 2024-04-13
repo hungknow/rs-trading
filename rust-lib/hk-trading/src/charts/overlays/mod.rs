@@ -8,7 +8,8 @@ use super::{
     DrawingBackend,
 };
 
-pub mod ohlcs;
+mod ohlcs;
+pub use ohlcs::Ohlcs;
 
 pub trait OverlayDrawing<DB: DrawingBackend, CT: CoordTranslate> {
     fn draw<'a>(

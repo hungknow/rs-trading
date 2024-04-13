@@ -83,4 +83,20 @@ pub trait Ranged {
     }
 }
 
+/// The trait for the type that can be converted into a ranged coordinate axis
+pub trait AsRangedCoord: Sized {
+    /// Type to describe a coordinate system
+    type CoordDescType: Ranged<ValueType = Self::Value> + From<Self>;
+    /// Type for values in the given coordinate system
+    type Value;
+}
+
+impl<T> AsRangedCoord for T
+where
+    T: Ranged,
+{
+    type CoordDescType = T;
+    type Value = T::ValueType;
+}
+
 pub(super) mod types;
