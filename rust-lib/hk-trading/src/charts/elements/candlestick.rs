@@ -37,8 +37,8 @@ impl<X: Clone, Y: PartialOrd> CandleStick<X, Y> {
     ) -> Self {
         Self {
             style: match open.partial_cmp(&close) {
-                Some(Ordering::Less) => gain_style.into(),
-                _ => loss_style.into(),
+                Some(Ordering::Less) => loss_style.into(),
+                _ => gain_style.into(),
             },
             width,
             points: [

@@ -327,8 +327,8 @@ mod tests {
             closes: close,
             volumes: volume,
             // trade_count,
-            time_desc: todo!(),
-            resolution: todo!(),
+            time_desc: None,
+            resolution: None,
         };
 
         // assert_eq!(candle_data_source.open, open);

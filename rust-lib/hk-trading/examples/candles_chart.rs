@@ -1,4 +1,5 @@
 use std::borrow::Borrow;
+use std::cell::{Ref, RefCell};
 use std::env;
 use std::path::{Path, PathBuf};
 
@@ -45,7 +46,10 @@ fn main() {
     candle_chart_csv_dir.pop();
     candle_chart_csv_dir.push("candles_chart.svg");
     let candle_chart_csv_file_path = candle_chart_csv_dir.to_str().unwrap();
-    println!("Write tocandle_chart_csv_file_path file: {}", candle_chart_csv_file_path);
+    println!(
+        "Write tocandle_chart_csv_file_path file: {}",
+        candle_chart_csv_file_path
+    );
 
     /*
        READ CSV from file
@@ -53,19 +57,32 @@ fn main() {
     let (csv_file_metadata, candles) = CandleCSVDataSource::load_csv_file(
         csv_file_path,
         Some(CandleCSVLoadOption {
-            limit: Some(100),
+            limit: Some(30),
             offset: None,
         }),
     )
     .unwrap();
 
-    let (width, height) = (1024, 768);
+    let (width, height) = (1270, 768);
+
+    let margin_left_right = Duration::minutes(0);
+    let from_time = candles.open_times[0] - margin_left_right;
+    let to_time = candles.open_times[candles.open_times.len() - 1] + margin_left_right;
+    println!(
+        "from_time: {}, to_time: {}, len: {}",
+        from_time,
+        to_time,
+        candles.open_times.len()
+    );
 
     /*
        Generate RSI data
     */
     let (highest, lowest) = candles.borrow().get_highest_lowest().unwrap();
-    let mut ohlcs = Ohlcs::new(&candles, width);
+    let mut ohlcs = Ohlcs::new();
+    ohlcs
+        .drawing_area_width(width)
+        .candles(RefCell::new(candles));
 
     /*
        Draw chart
@@ -74,21 +91,9 @@ fn main() {
     let drawing_area = drawing_backend.into_drawing_area();
     drawing_area.fill(&WHITE).unwrap();
 
-    let margin_left_right = Duration::minutes(0);
-
-    let from_time = candles.open_times[0] - margin_left_right;
-    let to_time = candles.open_times[candles.open_times.len() - 1] + margin_left_right;
-
     // Set the time range to display on chart
     ohlcs.from_time(from_time);
     ohlcs.to_time(to_time);
-
-    println!(
-        "from_time: {}, to_time: {}, len: {}",
-        from_time,
-        to_time,
-        candles.open_times.len()
-    );
 
     let mut chart_context = ChartBuilder::on(&drawing_area)
         .build_cartesian_2d(

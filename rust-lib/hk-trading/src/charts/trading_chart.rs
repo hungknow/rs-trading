@@ -1,3 +1,5 @@
+use std::borrow::BorrowMut;
+
 use crate::charts::overlays::OverlayDrawing;
 use chrono::{DateTime, Duration, Utc};
 
@@ -41,21 +43,24 @@ fn calculate_from_to(
     let mut max_of_from = max_time;
     let mut min_of_to = min_time;
     if let Some(ohlc) = ohlc_overlay {
-        if ohlc.candles.open_times.len() > 1 {
-            let from_time_data = if ohlc.candles.time_desc().unwrap() {
-                *ohlc.candles.open_times.first().unwrap()
-            } else {
-                *ohlc.candles.open_times.last().unwrap()
-            };
-            let to_time_data = if ohlc.candles.time_desc().unwrap() {
-                *ohlc.candles.open_times.last().unwrap()
-            } else {
-                *ohlc.candles.open_times.first().unwrap()
-            };
+        if let Some(candles_ref_cell) = ohlc.candles.as_ref() {
+            let candles = candles_ref_cell.borrow();
+            if candles.open_times.len() > 1 {
+                let from_time_data = if candles.time_desc().unwrap() {
+                    *candles.open_times.first().unwrap()
+                } else {
+                    *candles.open_times.last().unwrap()
+                };
+                let to_time_data = if candles.time_desc().unwrap() {
+                    *candles.open_times.last().unwrap()
+                } else {
+                    *candles.open_times.first().unwrap()
+                };
 
-            let diff_duration = Duration::seconds(resolution.to_seconds() * 5);
-            max_of_from = from_time_data - diff_duration;
-            min_of_to = to_time_data + diff_duration;
+                let diff_duration = Duration::seconds(resolution.to_seconds() * 5);
+                max_of_from = from_time_data - diff_duration;
+                min_of_to = to_time_data + diff_duration;
+            }
         }
     }
     let time_range_from = from.clamp(min_time, max_of_from);
@@ -103,11 +108,12 @@ impl TradingChartData {
 
     // Merge the candles into the existing candles, or set it as the current candles if there's none
     pub fn push_candles(&mut self, new_candles: &Candles) {
-        self.ohlc_overlay
-            .as_mut()
-            .unwrap()
-            .candles
-            .merge_candles(new_candles);
+        if let Some(ohlcs) = self.ohlc_overlay.as_ref() {
+            if let Some(candles_ref_cell) = ohlcs.candles.as_ref() {
+                let mut candles = candles_ref_cell.borrow_mut();
+                candles.merge_candles(new_candles);
+            }
+        }
     }
 
     pub fn change_display_time_range(&mut self, from: DateTime<Utc>, to: DateTime<Utc>) {
@@ -146,10 +152,9 @@ impl TradingChartData {
 
 #[cfg(test)]
 mod tests {
-    use crate::charts::{
-        drawing::{create_mocked_drawing_area, MockedBackend},
-        elements::MockedElement,
-    };
+    use std::cell::RefCell;
+
+    use crate::charts::drawing::create_mocked_drawing_area;
 
     use super::*;
 
@@ -173,7 +178,7 @@ mod tests {
         );
         assert_eq!(
             from,
-            DateTime::<Utc>::from_timestamp(1000 + resolution_5m_seconds * 5, 0).unwrap()
+            DateTime::<Utc>::from_timestamp(resolution_5m_seconds * 5, 0).unwrap()
         );
         assert_eq!(to, DateTime::<Utc>::from_timestamp(0, 0).unwrap());
     }
@@ -211,7 +216,9 @@ mod tests {
                 None,
             )
             .unwrap();
-        trading_chart.ohlc_overlay = Some(Box::new(Ohlcs::new(candles)));
+
+        let mut ohlcs = Ohlcs::new();
+        ohlcs.candles(RefCell::new(candles));
 
         // create backend for drawing
         let mut mocked_drawing_area = create_mocked_drawing_area(1000, 500, |_| {})
@@ -228,7 +235,9 @@ mod tests {
             drawing_area: mocked_drawing_area,
             series_anno: vec![],
         };
+
         // draw
+        trading_chart.ohlc_overlay = Some(Box::new(ohlcs));
         trading_chart.draw(&mut chart_context).unwrap();
     }
 }
