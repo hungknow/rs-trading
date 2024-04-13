@@ -13,7 +13,7 @@ use super::{
         types::{RangedCoordf64, RangedDateTime},
     },
     drawing::DrawingAreaErrorKind,
-    overlays::ohlcs::Ohlcs,
+    overlays::Ohlcs,
     DrawingBackend,
 };
 
@@ -65,6 +65,21 @@ fn calculate_from_to(
 }
 
 impl TradingChartData {
+    pub fn new() -> Self {
+        Self {
+            display_time_range: None,
+            symbol_identity: None,
+            resolution: None,
+            ohlc_overlay: None,
+            ema_overlay: None,
+        }
+    }
+
+    pub fn with_ohlc_overlay(&mut self, ohlcs: Box<Ohlcs>) -> &mut Self {
+        self.ohlc_overlay = Some(ohlcs);
+        self
+    }
+
     // pub fn on_range_changed()
 
     // Pan (start, move, end)

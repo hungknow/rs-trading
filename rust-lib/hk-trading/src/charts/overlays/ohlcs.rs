@@ -15,7 +15,7 @@ use crate::{
         style::{ShapeStyle, GREEN, RED},
         DrawingBackend,
     },
-    data::Candles,
+    data::{Candle, Candles},
 };
 
 use super::OverlayDrawing;
@@ -31,10 +31,10 @@ pub struct Ohlcs {
 }
 
 impl Ohlcs {
-    pub fn new(candles: Candles) -> Self {
+    pub fn new(candles: &Candles) -> Self {
         if candles.open_times.is_empty() {
             return Self {
-                candles: candles,
+                candles: Candles::new(),
                 from_time: None,
                 to_time: None,
                 drawing_area_width: 0,
@@ -45,7 +45,7 @@ impl Ohlcs {
         let to_time = *candles.open_times.last().unwrap();
         let candlesticks = Self::get_ohlcs(from_time, to_time, &candles, 400);
         Self {
-            candles: candles,
+            candles: candles.clone(),
             from_time: Some(from_time),
             to_time: Some(to_time),
             drawing_area_width: 0,

@@ -1,5 +1,5 @@
 use crate::charts::coord::ranged1d::{
-    DefaultFormatting, KeyPointHint, NoDefaultFormatting, Ranged,
+    AsRangedCoord, DefaultFormatting, KeyPointHint, NoDefaultFormatting, Ranged,
 };
 use std::ops::Range;
 
@@ -139,6 +139,14 @@ gen_key_points_comp!(integer, compute_u128_key_points, u128);
 gen_key_points_comp!(integer, compute_isize_key_points, isize);
 gen_key_points_comp!(integer, compute_usize_key_points, usize);
 
+macro_rules! impl_ranged_type_trait {
+    ($value:ty, $coord:ident) => {
+        impl AsRangedCoord for Range<$value> {
+            type CoordDescType = $coord;
+            type Value = $value;
+        }
+    };
+}
 macro_rules! make_numeric_coord {
     ($type:ty, $name:ident, $key_points:ident, $doc: expr, $fmt: ident) => {
         #[doc = $doc]
@@ -257,3 +265,14 @@ make_numeric_coord!(
     compute_isize_key_points,
     "The ranged coordinate for type isize"
 );
+
+impl_ranged_type_trait!(f32, RangedCoordf32);
+impl_ranged_type_trait!(f64, RangedCoordf64);
+impl_ranged_type_trait!(i32, RangedCoordi32);
+impl_ranged_type_trait!(u32, RangedCoordu32);
+impl_ranged_type_trait!(i64, RangedCoordi64);
+impl_ranged_type_trait!(u64, RangedCoordu64);
+impl_ranged_type_trait!(i128, RangedCoordi128);
+impl_ranged_type_trait!(u128, RangedCoordu128);
+impl_ranged_type_trait!(isize, RangedCoordisize);
+impl_ranged_type_trait!(usize, RangedCoordusize);

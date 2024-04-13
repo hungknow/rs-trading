@@ -63,6 +63,12 @@ impl DrawingBackend for MockedBackend {
         Ok(())
     }
 
+    fn present(&mut self) -> Result<(), DrawingErrorKind<MockedError>> {
+        self.init_count = 0;
+        self.draw_count = 0;
+        Ok(())
+    }
+
     fn draw_line<S: BackendStyle>(
         &mut self,
         from: BackendCoord,

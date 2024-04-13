@@ -1,6 +1,7 @@
 use crate::charts::{
     coord::{cartesian::Cartesian2d, ranged1d::Ranged, CoordTranslate, Shift},
     elements::{CoordMapper, Drawable, PointCollection},
+    style::Color,
     DrawingBackend, DrawingErrorKind,
 };
 use std::{borrow::Borrow, ops::Range};
@@ -31,6 +32,16 @@ pub struct DrawingArea<DB: DrawingBackend, CT: CoordTranslate> {
     pub(crate) backend: Rc<RefCell<DB>>,
     pub(crate) rect: Rect,
     pub(crate) coord: CT,
+}
+
+impl<DB: DrawingBackend, CT: CoordTranslate + Clone> Clone for DrawingArea<DB, CT> {
+    fn clone(&self) -> Self {
+        Self {
+            backend: self.backend.clone(),
+            rect: self.rect.clone(),
+            coord: self.coord.clone(),
+        }
+    }
 }
 
 /// The error description of any drawing area API
@@ -187,6 +198,28 @@ impl<DB: DrawingBackend, CT: CoordTranslate> DrawingArea<DB, CT> {
             (self.rect.x1 - self.rect.x0) as u32,
             (self.rect.y1 - self.rect.y0) as u32,
         )
+    }
+
+    /// Get the pixel range of this area
+    pub fn get_pixel_range(&self) -> (Range<i32>, Range<i32>) {
+        (self.rect.x0..self.rect.x1, self.rect.y0..self.rect.y1)
+    }
+
+    /// Fill the entire drawing area with a color
+    pub fn fill<ColorType: Color>(&self, color: &ColorType) -> Result<(), DrawingAreaError<DB>> {
+        self.backend_ops(|backend| {
+            backend.draw_rect(
+                (self.rect.x0, self.rect.y0),
+                (self.rect.x1, self.rect.y1),
+                &color.to_backend_color(),
+                true,
+            )
+        })
+    }
+
+    /// Present all the pending changes to the backend
+    pub fn present(&self) -> Result<(), DrawingAreaError<DB>> {
+        self.backend_ops(|b| b.present())
     }
 }
 

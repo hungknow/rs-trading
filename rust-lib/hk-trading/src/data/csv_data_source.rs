@@ -1,7 +1,6 @@
 use chrono::{DateTime, Utc};
 use csv::{Position, StringRecord};
-
-use crate::errors::TaError;
+use hk_infra::HkError;
 
 use super::{Candle, CandleDataSource, Candles, DataSourceMeta, Resolution};
 
@@ -32,11 +31,12 @@ impl CandleCSVDataSource {
     pub fn load_csv_file(
         file_path: &str,
         load_option: Option<CandleCSVLoadOption>,
-    ) -> Result<(CSVFileMetadata, Candles), TaError> {
-        let mut reader = csv::Reader::from_path(file_path).map_err(|e| TaError::CsvError(e))?;
+    ) -> Result<(CSVFileMetadata, Candles), HkError> {
+        let mut reader =
+            csv::Reader::from_path(file_path).map_err(|e| HkError::CsvError(e.to_string()))?;
 
         let mut candles = Candles::new();
-        let mut csv_file_metadata: CSVFileMetadata = CSVFileMetadata {
+        let csv_file_metadata: CSVFileMetadata = CSVFileMetadata {
             file_path: file_path.to_string(),
             resolution: Resolution::M1,
             ticker: "XAUUSD".to_string(),
@@ -56,19 +56,19 @@ impl CandleCSVDataSource {
         }
 
         for result in reader.records() {
-            let record = result.map_err(|e| TaError::CsvError(e))?;
+            let record = result.map_err(|e| HkError::CsvError(e.to_string()))?;
             // record.
             let candle: Candle = CandleCSVDataSource::parse_string_record(record)?;
             candles.push_candle(&candle);
 
-            if limit > 0 && candles.open_time.len() as i64 >= limit {
+            if limit > 0 && candles.open_times.len() as i64 >= limit {
                 break;
             }
         }
 
-        if candles.open_time.len() > 2 {
-            let from_time = candles.open_time[0];
-            let to_time = candles.open_time[1];
+        if candles.open_times.len() > 2 {
+            let from_time = candles.open_times[0];
+            let to_time = candles.open_times[1];
             let diff_seconds = (to_time - from_time).num_seconds();
             Resolution::from_seconds(diff_seconds);
         }
@@ -77,8 +77,8 @@ impl CandleCSVDataSource {
     }
 
     #[inline]
-    fn parse_string_record(record: StringRecord) -> Result<Candle, TaError> {
-        let csv_missing_row = || TaError::CsvMissingColumn(format!("missing in {:?}", record));
+    fn parse_string_record(record: StringRecord) -> Result<Candle, HkError> {
+        let csv_missing_row = || HkError::CsvMissingColumn(format!("missing in {:?}", record));
 
         // Parse each column
         let date = record.get(1).ok_or_else(csv_missing_row)?;
@@ -93,7 +93,7 @@ impl CandleCSVDataSource {
         let datetime = format!("{} {} +00:00", date, time);
         let datetime_from_string = DateTime::parse_from_str(&datetime, "%Y%m%d %H%M%S %z")
             .map_err(|e| {
-                TaError::CsvMissingColumn(format!(
+                HkError::CsvMissingColumn(format!(
                     "parsing date time failing in \"{}\", {:?}, {}",
                     datetime, record, e
                 ))
@@ -149,7 +149,7 @@ XAUUSD,20220608,000200,1849.4,1849.4,1849.2,1849.3,4
         let mut candles: Vec<Candle> = vec![];
         for record in rdr.records() {
             let record = record.unwrap();
-            let candle = ds.parse_string_record(record).unwrap();
+            let candle = CandleCSVDataSource::parse_string_record(record).unwrap();
             println!("{:?}", candle);
             candles.push(candle);
         }

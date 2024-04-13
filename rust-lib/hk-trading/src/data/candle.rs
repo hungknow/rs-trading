@@ -291,6 +291,16 @@ impl Candles {
             }
         }
     }
+
+    pub fn get_highest_lowest(&self) -> Option<(f64, f64)> {
+        if self.lows.len() > 0 {
+            let highest = self.highs.iter().fold(self.highs[0], |acc, &x| acc.max(x));
+            let lowest = self.lows.iter().fold(self.lows[0], |acc, &x| acc.min(x));
+            Some((highest, lowest))
+        } else {
+            None
+        }
+    }
 }
 
 #[cfg(test)]

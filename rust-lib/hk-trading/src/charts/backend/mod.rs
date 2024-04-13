@@ -25,6 +25,13 @@ pub trait DrawingBackend: Sized {
     /// Ensure the backend is ready to draw
     fn ensure_prepared(&mut self) -> Result<(), DrawingErrorKind<Self::ErrorType>>;
 
+    /// Finalize the drawing step and present all the changes.
+    /// This is used as the real-time rendering support.
+    /// The backend may implement in the following way, when `ensure_prepared` is called
+    /// it checks if it needs a fresh buffer and `present` is called rendering all the
+    /// pending changes on the screen.
+    fn present(&mut self) -> Result<(), DrawingErrorKind<Self::ErrorType>>;
+
     fn draw_line<S: BackendStyle>(
         &mut self,
         from: BackendCoord,

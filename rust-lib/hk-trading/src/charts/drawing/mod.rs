@@ -1,5 +1,5 @@
 mod area;
-pub use area::{Rect, DrawingArea, DrawingAreaErrorKind};
+pub use area::{DrawingArea, DrawingAreaErrorKind, IntoDrawingArea, Rect};
 
 #[cfg(test)]
 mod backend_impl;
