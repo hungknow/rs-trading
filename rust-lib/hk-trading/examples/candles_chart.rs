@@ -1,7 +1,5 @@
 use std::borrow::Borrow;
-use std::cell::RefCell;
-use std::env;
-use std::path::{Path, PathBuf};
+use std::sync::Arc;
 
 use chrono::Duration;
 use hk_trading::charts::drawing::IntoDrawingArea;
@@ -16,17 +14,15 @@ fn main() {
     let (file_path, mut candle_chart_csv_dir) =
         get_hk_trading_file_path(DATA_HISTORIC_XAUUSD_CANDLES_1M).unwrap();
     let csv_file_path = file_path.to_str().unwrap();
+
     println!("Load file: {}", file_path.display());
 
     candle_chart_csv_dir.push("candles_chart.svg");
     let candle_chart_csv_file_path = candle_chart_csv_dir.to_str().unwrap();
-    println!(
-        "Write tocandle_chart_csv_file_path file: {}",
-        candle_chart_csv_file_path
-    );
+    println!("Write SVG to file: {}", candle_chart_csv_file_path);
 
     /*
-       READ CSV from file
+       Read Candles from CSV file
     */
     let (_, candles) = CandleCSVDataSource::load_csv_file(
         csv_file_path,
@@ -37,6 +33,7 @@ fn main() {
     )
     .unwrap();
 
+    // the width and height of SVG chart
     let (width, height) = (1270, 768);
 
     let margin_left_right = Duration::minutes(1);
@@ -60,7 +57,7 @@ fn main() {
     let mut ohlcs = OhlcOverlay::new();
     ohlcs
         .drawing_area_width(width)
-        .candles(RefCell::new(candles))
+        .candles(Arc::new(candles))
         .from_time(from_time)
         .to_time(to_time);
 
@@ -79,7 +76,7 @@ fn main() {
         .unwrap();
 
     let mut trading_chart_data = TradingChartData::new();
-    trading_chart_data.with_ohlc_overlay(Box::new(ohlcs));
+    trading_chart_data.with_ohlc_overlay(ohlcs);
     // chart_context.s
     // drawing_area.
     trading_chart_data.draw(&mut chart_context).unwrap();

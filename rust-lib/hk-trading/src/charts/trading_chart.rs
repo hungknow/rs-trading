@@ -24,15 +24,15 @@ pub struct TradingChartData {
     pub resolution: Option<Resolution>,
 
     // Overlays
-    pub ohlc_overlay: Option<Box<OhlcOverlay>>,
-    pub ema_overlay: Option<Box<IndicatorContainer<ExponentialMovingAverage>>>,
+    pub ohlc_overlay: Option<OhlcOverlay>,
+    pub ema_overlay: Option<IndicatorContainer<ExponentialMovingAverage>>,
 }
 
 fn calculate_from_to(
     from: DateTime<Utc>,
     to: DateTime<Utc>,
     resolution: Resolution,
-    ohlc_overlay: Option<&Box<OhlcOverlay>>,
+    ohlc_overlay: Option<&OhlcOverlay>,
 ) -> (DateTime<Utc>, DateTime<Utc>) {
     // If there's ohlc data, try to use it to limit the range
     let min_time = DateTime::<Utc>::from_timestamp(0, 0).unwrap();
@@ -79,7 +79,7 @@ impl TradingChartData {
         }
     }
 
-    pub fn with_ohlc_overlay(&mut self, ohlcs: Box<OhlcOverlay>) -> &mut Self {
+    pub fn with_ohlc_overlay(&mut self, ohlcs: OhlcOverlay) -> &mut Self {
         self.ohlc_overlay = Some(ohlcs);
         self
     }
@@ -236,7 +236,7 @@ mod tests {
         };
 
         // draw
-        trading_chart.ohlc_overlay = Some(Box::new(ohlcs));
+        trading_chart.ohlc_overlay = Some(ohlcs);
         trading_chart.draw(&mut chart_context).unwrap();
     }
 }

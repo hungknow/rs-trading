@@ -7,8 +7,8 @@ use super::{
     context::ChartContext, coord::CoordTranslate, drawing::DrawingAreaErrorKind, DrawingBackend,
 };
 
-mod ohlcs;
-pub use ohlcs::OhlcOverlay;
+mod ohlc;
+pub use ohlc::OhlcOverlay;
 
 pub trait OverlayData<T, S> {
     fn overlay_name(&self) -> &str;

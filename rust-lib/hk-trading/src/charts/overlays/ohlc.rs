@@ -153,13 +153,6 @@ impl OverlayData<Candles, OhlcOverlaySettings> for OhlcOverlay {
         None
     }
 
-    // fn overlay_data_mut(&mut self) -> Option<&mut Candles> {
-    //     if let Some(candles) = self.candles.as_ref() {
-    //         return Some(candles.write().unwrap().borrow_mut());
-    //     }
-    //     None
-    // }
-
     fn priority(&self) -> u32 {
         1
     }
