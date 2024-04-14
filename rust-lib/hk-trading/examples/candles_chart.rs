@@ -1,10 +1,10 @@
-use std::borrow::Borrow;
+use std::borrow::{Borrow, BorrowMut};
 use std::sync::Arc;
 
 use chrono::Duration;
 use hk_trading::charts::drawing::IntoDrawingArea;
 use hk_trading::charts::overlays::OhlcOverlay;
-use hk_trading::charts::style::BLACK_1;
+use hk_trading::charts::style::{BLACK_1, BLACK, BLUE};
 use hk_trading::charts::TradingChartData;
 use hk_trading::charts::{svg_backend::SVGBackend, ChartBuilder};
 use hk_trading::data::{CandleCSVDataSource, CandleCSVLoadOption};
@@ -60,6 +60,7 @@ fn main() {
         .candles(Arc::new(candles))
         .from_time(from_time)
         .to_time(to_time);
+    // EMA overlay
 
     /*
        Draw chart
@@ -70,16 +71,24 @@ fn main() {
     drawing_area.fill(&BLACK_1).unwrap();
 
     let mut chart_context = ChartBuilder::on(&drawing_area)
-        .build_cartesian_2d(
-            from_time..to_time + Duration::minutes(1),
-            lowest - 0.2..highest + 0.2,
-        )
+        .build_trading_chart_context(from_time..to_time, lowest - 0.2..highest + 0.2, 0)
         .unwrap();
 
     let mut trading_chart_data = TradingChartData::new();
     trading_chart_data
         .add_on_chart_overlay(Box::new(ohlcs))
-        .draw(&mut chart_context)
+        .draw(chart_context.main_drawing_area.borrow_mut())
+        .unwrap();
+
+    // chart_context.off_chart_drawings[0]
+    //     .drawing_area
+    //     .fill(&BLACK)
+    //     .unwrap();
+    chart_context
+        .main_drawing_area
+        .right_side_bar_area
+        .unwrap()
+        .fill(&BLUE)
         .unwrap();
 
     drawing_area.present().expect("Expect");

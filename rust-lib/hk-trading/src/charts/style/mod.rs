@@ -6,5 +6,7 @@ mod color;
 pub use color::{Color, RGBAColor, RGBColor};
 
 pub mod colors;
-pub use colors::{BLACK_1, GREEN, GREEN_1, RED, RED_1, TRANSPARENT, WHITE, YELLOW};
+pub use colors::{
+    BLACK, BLACK_1, BLUE, CYAN, GREEN, GREEN_1, MAGENTA, RED, RED_1, TRANSPARENT, WHITE, YELLOW,
+};
 pub use size::SizeDesc;

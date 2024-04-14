@@ -156,7 +156,6 @@ impl<DB: DrawingBackend> Overlay<DB, Cartesian2d<RangedDateTime<DateTime<Utc>>, 
     fn draw<'a>(
         &mut self,
         chart_context: &mut ChartContext<
-            'a,
             DB,
             Cartesian2d<RangedDateTime<DateTime<Utc>>, RangedCoordf64>,
         >,
@@ -217,7 +216,6 @@ impl<DB: DrawingBackend>
     fn draw<'a>(
         &mut self,
         chart_context: &mut ChartContext<
-            'a,
             DB,
             Cartesian2d<RangedDateTime<DateTime<Utc>>, RangedCoordf64>,
         >,

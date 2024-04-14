@@ -28,8 +28,8 @@ pub struct TradingChartData<DB: DrawingBackend, CT: CoordTranslate> {
 
     // Overlays
     pub on_chart: Vec<Box<dyn Overlay<DB, CT>>>,
-    pub ohlc_overlay: Option<OhlcOverlay>,
-    pub ema_overlay: Option<IndicatorContainer<ExponentialMovingAverage>>,
+    // pub ohlc_overlay: Option<OhlcOverlay>,
+    // pub ema_overlay: Option<IndicatorContainer<ExponentialMovingAverage>>,
 }
 
 fn calculate_from_to(
@@ -79,18 +79,11 @@ impl<DB: DrawingBackend, CT: CoordTranslate> TradingChartData<DB, CT> {
             symbol_identity: None,
             resolution: None,
             on_chart: vec![],
-            ohlc_overlay: None,
-            ema_overlay: None,
         }
     }
 
     pub fn add_on_chart_overlay(&mut self, overlay: Box<dyn Overlay<DB, CT>>) -> &mut Self {
         self.on_chart.push(overlay);
-        self
-    }
-
-    pub fn with_ohlc_overlay(&mut self, ohlcs: OhlcOverlay) -> &mut Self {
-        self.ohlc_overlay = Some(ohlcs);
         self
     }
 
@@ -126,20 +119,23 @@ impl<DB: DrawingBackend, CT: CoordTranslate> TradingChartData<DB, CT> {
     // }
 
     pub fn change_display_time_range(&mut self, from: DateTime<Utc>, to: DateTime<Utc>) {
-        let (time_range_from, time_range_to) = calculate_from_to(
-            from,
-            to,
-            self.resolution.unwrap(),
-            self.ohlc_overlay.as_ref(),
-        );
+        // Iterate through all overlays and update the time range
+        // for overlay in self.on_chart.iter_mut() {
+        //     overlay.overlay_data_mut().unwrap().change_display_time_range(from, to);
+        // }
+        //     let (time_range_from, time_range_to) = calculate_from_to(
+        //         from,
+        //         to,
+        //         self.resolution.unwrap(),
+        //         self.ohlc_overlay.as_ref(),
+        //     );
 
-        self.display_time_range = Some((time_range_from, time_range_to));
+        //     self.display_time_range = Some((time_range_from, time_range_to));
     }
 
     pub fn draw<'a>(
         &mut self,
         chart_context: &mut ChartContext<
-            'a,
             DB,
             CT,
             // Cartesian2d<RangedDateTime<DateTime<Utc>>, RangedCoordf64>,
@@ -210,8 +206,6 @@ mod tests {
             symbol_identity: None,
             resolution: None,
             on_chart: vec![],
-            ohlc_overlay: None,
-            ema_overlay: None,
         };
         // prepare ohlc data
         let from_time = DateTime::<Utc>::from_timestamp(0, 0).unwrap();
@@ -254,11 +248,11 @@ mod tests {
         // create chart context
         let mut chart_context = ChartContext {
             drawing_area: mocked_drawing_area,
-            series_anno: vec![],
+            right_side_bar_area: None,
         };
 
         // draw
-        trading_chart.ohlc_overlay = Some(ohlcs);
+        trading_chart.add_on_chart_overlay(Box::new(ohlcs));
         trading_chart.draw(&mut chart_context).unwrap();
     }
 }

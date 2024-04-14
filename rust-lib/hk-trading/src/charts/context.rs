@@ -1,23 +1,26 @@
 use std::borrow::Borrow;
 
 use super::{
-    coord::CoordTranslate,
+    coord::{CoordTranslate, Shift},
     drawing::{DrawingArea, DrawingAreaErrorKind},
     elements::{CoordMapper, Drawable, PointCollection},
-    overlays::SeriesAnno,
     DrawingBackend,
 };
 
-pub struct ChartContext<'a, DB: DrawingBackend, CT: CoordTranslate> {
-    pub(crate) drawing_area: DrawingArea<DB, CT>,
-    pub(crate) series_anno: Vec<SeriesAnno<'a, DB>>,
+pub struct ChartContext<DB: DrawingBackend, CT: CoordTranslate> {
+    pub right_side_bar_area: Option<DrawingArea<DB, Shift>>,
+    // The main drawing area (for Ohlcs)
+    pub drawing_area: DrawingArea<DB, CT>,
+    // The drawing area for off chart drawings (Indicators draw their data here)
+    // pub(crate) off_chart_drawings: Vec<DrawingArea<DB, CT>>,
+    // pub(crate) series_anno: Vec<SeriesAnno<'a, DB>>,
 }
 
-impl<'a, DB: DrawingBackend, CT: CoordTranslate> ChartContext<'a, DB, CT> {
+impl<'a, DB: DrawingBackend, CT: CoordTranslate> ChartContext<DB, CT> {
     pub fn draw_series<B, E, R, S>(
         &mut self,
         series: S,
-    ) -> Result<&mut SeriesAnno<'a, DB>, DrawingAreaErrorKind<DB::ErrorType>>
+    ) -> Result<(), DrawingAreaErrorKind<DB::ErrorType>>
     where
         B: CoordMapper,
         for<'b> &'b E: PointCollection<'b, CT::From, B>,
@@ -28,12 +31,35 @@ impl<'a, DB: DrawingBackend, CT: CoordTranslate> ChartContext<'a, DB, CT> {
         for element in series {
             self.drawing_area.draw(element.borrow())?;
         }
-        Ok(self.alloc_series_anno())
+        Ok(())
+        // Ok(self.alloc_series_anno())
     }
 
-    pub(crate) fn alloc_series_anno(&mut self) -> &mut SeriesAnno<'a, DB> {
-        let idx = self.series_anno.len();
-        self.series_anno.push(SeriesAnno::new());
-        &mut self.series_anno[idx]
-    }
+    // pub(crate) fn alloc_series_anno(&mut self) -> &mut SeriesAnno<'a, DB> {
+    //     let idx = self.series_anno.len();
+    //     self.series_anno.push(SeriesAnno::new());
+    //     &mut self.series_anno[idx]
+    // }
+}
+// Contains all main drawing area and off chart drawing areas
+// +----------+------------------------------+------+
+// |    1     |      2 (Main chart)          |   3  |
+// |  Left    |      Plotting Area)          | Right|
+// |  Labels  |                              | Label|
+// +----------+------------------------------+------+
+// |    6     |        7 (OffChart 1)        |   8  |
+// +----------+------------------------------+------+
+// |    9     |        10 (OffChart 2)       |  11  |
+// +----------+------------------------------+------+
+// |    12    |        13 (Bottom Labels)    |  14  |
+// +----------+------------------------------+------+
+pub struct TradingChartContext<DB: DrawingBackend, CT: CoordTranslate> {
+    pub root_drawing_area: DrawingArea<DB, Shift>,
+    pub main_drawing_area: ChartContext<DB, CT>,
+    // The drawing area for off chart drawings (Indicators draw their data here)
+    pub off_chart_drawings: Vec<ChartContext<DB, CT>>,
+    // The X-axis area
+    pub x_axis: DrawingArea<DB, Shift>,
+    // pub(crate) y_axis: DrawingArea<DB, CT>,
+    // pub(crate) drawing_area: DrawingArea<DB, super::coord::cartesian::Cartesian2d<_, _>>,
 }

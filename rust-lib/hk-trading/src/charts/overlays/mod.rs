@@ -23,9 +23,9 @@ pub trait OverlayData<DataType, Setting> {
 }
 
 pub trait OverlayDrawing<DB: DrawingBackend, CT: CoordTranslate> {
-    fn draw<'a>(
+    fn draw(
         &mut self,
-        chart_context: &mut ChartContext<'a, DB, CT>,
+        chart_context: &mut ChartContext<DB, CT>,
     ) -> Result<(), DrawingAreaErrorKind<DB::ErrorType>>;
 }
 
@@ -34,8 +34,8 @@ pub trait Overlay<DB: DrawingBackend, CT: CoordTranslate> {
     fn overlay_type(&self) -> &str;
     fn priority(&self) -> u32;
 
-    fn draw<'a>(
+    fn draw(
         &mut self,
-        chart_context: &mut ChartContext<'a, DB, CT>,
+        chart_context: &mut ChartContext<DB, CT>,
     ) -> Result<(), DrawingAreaErrorKind<DB::ErrorType>>;
 }
