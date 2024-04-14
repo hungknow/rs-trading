@@ -8,6 +8,7 @@ use crate::{
         coord::{
             cartesian::Cartesian2d,
             types::{RangedCoordf64, RangedDateTime},
+            CoordTranslate,
         },
         drawing::DrawingAreaErrorKind,
         elements::CandleStick,
@@ -17,7 +18,7 @@ use crate::{
     data::Candles,
 };
 
-use super::{OverlayData, OverlayDrawing};
+use super::{Overlay, OverlayData, OverlayDrawing};
 
 pub struct OhlcOverlaySettings {}
 
@@ -134,6 +135,54 @@ impl OhlcOverlay {
         }
 
         candlestick_elements
+    }
+}
+
+impl<DB: DrawingBackend> Overlay<DB, Cartesian2d<RangedDateTime<DateTime<Utc>>, RangedCoordf64>>
+    for OhlcOverlay
+{
+    fn overlay_name(&self) -> &str {
+        "Candles"
+    }
+
+    fn overlay_type(&self) -> &str {
+        "OHLC"
+    }
+
+    fn priority(&self) -> u32 {
+        1
+    }
+
+    fn draw<'a>(
+        &mut self,
+        chart_context: &mut ChartContext<
+            'a,
+            DB,
+            Cartesian2d<RangedDateTime<DateTime<Utc>>, RangedCoordf64>,
+        >,
+    ) -> Result<(), DrawingAreaErrorKind<DB::ErrorType>> {
+        if self.candles.is_none() {
+            return Ok(());
+        }
+        if (!self.from_time.is_none() && self.previous_from_time != self.from_time)
+            || (!self.to_time.is_none() && self.previous_to_time != self.to_time)
+        {
+            self.candlesticks = Some(Rc::new(Self::get_ohlcs(
+                self.from_time.unwrap(),
+                self.to_time.unwrap(),
+                self.overlay_data().unwrap().as_ref(),
+                self.drawing_area_width,
+            )));
+            self.previous_from_time = self.from_time;
+            self.previous_to_time = self.to_time;
+        }
+        // Draw ohlc
+        if let Some(candlesticks) = self.candlesticks.as_mut() {
+            let candlesticks = candlesticks.to_vec();
+            chart_context.draw_series(candlesticks)?;
+        }
+
+        Ok(())
     }
 }
 

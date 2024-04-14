@@ -18,7 +18,7 @@ fn main() {
     println!("Load file: {}", file_path.display());
 
     candle_chart_csv_dir.push("candles_chart.svg");
-    let candle_chart_csv_file_path = candle_chart_csv_dir.to_str().unwrap();
+    let candle_chart_csv_file_path = candle_chart_csv_dir.to_str().unwrap().to_owned();
     println!("Write SVG to file: {}", candle_chart_csv_file_path);
 
     /*
@@ -64,7 +64,8 @@ fn main() {
     /*
        Draw chart
     */
-    let drawing_backend = SVGBackend::with_file_path(candle_chart_csv_file_path, (width, height));
+    let drawing_backend =
+        SVGBackend::with_file_path(candle_chart_csv_file_path.as_str(), (width, height));
     let drawing_area = drawing_backend.into_drawing_area();
     drawing_area.fill(&BLACK_1).unwrap();
 
@@ -76,10 +77,10 @@ fn main() {
         .unwrap();
 
     let mut trading_chart_data = TradingChartData::new();
-    trading_chart_data.with_ohlc_overlay(ohlcs);
-    // chart_context.s
-    // drawing_area.
-    trading_chart_data.draw(&mut chart_context).unwrap();
+    trading_chart_data
+        .add_on_chart_overlay(Box::new(ohlcs))
+        .draw(&mut chart_context)
+        .unwrap();
 
     drawing_area.present().expect("Expect");
 }
