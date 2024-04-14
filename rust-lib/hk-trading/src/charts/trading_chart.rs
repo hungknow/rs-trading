@@ -1,4 +1,6 @@
-use crate::charts::overlays::{OverlayData, OverlayDrawing};
+use std::sync::Arc;
+
+use crate::charts::overlays::OverlayData;
 use chrono::{DateTime, Duration, Utc};
 
 use crate::{
@@ -11,19 +13,21 @@ use super::{
     coord::{
         cartesian::Cartesian2d,
         types::{RangedCoordf64, RangedDateTime},
+        CoordTranslate,
     },
     drawing::DrawingAreaErrorKind,
-    overlays::OhlcOverlay,
+    overlays::{OhlcOverlay, Overlay},
     DrawingBackend,
 };
 
 // One Chart panel in multi chart
-pub struct TradingChartData {
+pub struct TradingChartData<DB: DrawingBackend, CT: CoordTranslate> {
     pub display_time_range: Option<(DateTime<Utc>, DateTime<Utc>)>,
     pub symbol_identity: Option<SymbolIdentity>,
     pub resolution: Option<Resolution>,
 
     // Overlays
+    pub on_chart: Vec<Box<dyn Overlay<DB, CT>>>,
     pub ohlc_overlay: Option<OhlcOverlay>,
     pub ema_overlay: Option<IndicatorContainer<ExponentialMovingAverage>>,
 }
@@ -68,15 +72,21 @@ fn calculate_from_to(
     (time_range_from, time_range_to)
 }
 
-impl TradingChartData {
+impl<DB: DrawingBackend, CT: CoordTranslate> TradingChartData<DB, CT> {
     pub fn new() -> Self {
         Self {
             display_time_range: None,
             symbol_identity: None,
             resolution: None,
+            on_chart: vec![],
             ohlc_overlay: None,
             ema_overlay: None,
         }
+    }
+
+    pub fn add_on_chart_overlay(&mut self, overlay: Box<dyn Overlay<DB, CT>>) -> &mut Self {
+        self.on_chart.push(overlay);
+        self
     }
 
     pub fn with_ohlc_overlay(&mut self, ohlcs: OhlcOverlay) -> &mut Self {
@@ -126,21 +136,32 @@ impl TradingChartData {
         self.display_time_range = Some((time_range_from, time_range_to));
     }
 
-    pub fn draw<'a, DB>(
+    pub fn draw<'a>(
         &mut self,
         chart_context: &mut ChartContext<
             'a,
             DB,
-            Cartesian2d<RangedDateTime<DateTime<Utc>>, RangedCoordf64>,
+            CT,
+            // Cartesian2d<RangedDateTime<DateTime<Utc>>, RangedCoordf64>,
         >,
     ) -> Result<(), DrawingAreaErrorKind<DB::ErrorType>>
     where
         DB: DrawingBackend,
     {
-        // Draw ohlc
-        if let Some(ohlc_overlay) = self.ohlc_overlay.as_mut() {
-            ohlc_overlay.draw(chart_context)?;
+        for overlay in self.on_chart.iter_mut() {
+            overlay.draw(chart_context)?;
         }
+        // self.on_chart.iter_mut().for_each(|overlay| {
+        //     overlay
+        //         .downcast_mut::<Box<dyn OverlayDrawing<DB, Cartesian2d<RangedDateTime<DateTime<Utc>>, RangedCoordf64>>>>()
+        //         .unwrap()
+        //         .draw(chart_context)
+        //         .unwrap();
+        // });
+        // Draw ohlc
+        // if let Some(ohlc_overlay) = self.ohlc_overlay.as_mut() {
+        //     ohlc_overlay.draw(chart_context)?;
+        // }
 
         /*
            Overlays
@@ -151,7 +172,7 @@ impl TradingChartData {
 
 #[cfg(test)]
 mod tests {
-    use std::sync::{Arc, RwLock};
+    use std::sync::Arc;
 
     use crate::{charts::drawing::create_mocked_drawing_area, data::Candles};
 
@@ -188,6 +209,7 @@ mod tests {
             display_time_range: None,
             symbol_identity: None,
             resolution: None,
+            on_chart: vec![],
             ohlc_overlay: None,
             ema_overlay: None,
         };

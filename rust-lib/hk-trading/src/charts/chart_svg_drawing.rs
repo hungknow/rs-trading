@@ -2,10 +2,10 @@ use hk_infra::{future::HkFutureResult, HkError};
 
 use super::TradingChartData;
 
-pub struct ChartSVGDrawingContext<'a> {
+pub struct ChartSVGDrawingContext {
     pub width: u32,
     pub height: u32,
-    pub data: &'a TradingChartData,
+    // pub data: &'a TradingChartData,
 }
 
 pub trait ChartSVGDrawing {
