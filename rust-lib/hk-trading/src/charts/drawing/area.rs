@@ -1,7 +1,7 @@
 use crate::charts::{
     coord::{cartesian::Cartesian2d, ranged1d::Ranged, CoordTranslate, Shift},
     elements::{CoordMapper, Drawable, PointCollection},
-    style::Color,
+    style::{Color, SizeDesc},
     DrawingBackend, DrawingErrorKind,
 };
 use std::{borrow::Borrow, ops::Range};
@@ -20,6 +20,40 @@ impl Rect {
     /// Make the coordinate in the range of the rectangle
     pub fn truncate(&self, p: (i32, i32)) -> (i32, i32) {
         (p.0.min(self.x1).max(self.x0), p.1.min(self.y1).max(self.y0))
+    }
+
+    /// Evenly the rectangle into a grid with arbitrary breaks; return a rect iterator.
+    fn split_grid(
+        &self,
+        x_breaks: impl Iterator<Item = i32>,
+        y_breaks: impl Iterator<Item = i32>,
+    ) -> impl Iterator<Item = Rect> {
+        let mut xs = vec![self.x0, self.x1];
+        let mut ys = vec![self.y0, self.y1];
+        xs.extend(x_breaks.map(|v| v + self.x0));
+        ys.extend(y_breaks.map(|v| v + self.y0));
+
+        xs.sort_unstable();
+        ys.sort_unstable();
+
+        let xsegs: Vec<_> = xs
+            .iter()
+            .zip(xs.iter().skip(1))
+            .map(|(a, b)| (*a, *b))
+            .collect();
+
+        let ysegs: Vec<_> = ys
+            .iter()
+            .zip(ys.iter().skip(1))
+            .map(|(a, b)| (*a, *b))
+            .collect();
+
+        ysegs.into_iter().flat_map(move |(y0, y1)| {
+            xsegs
+                .clone()
+                .into_iter()
+                .map(move |(x0, x1)| Self { x0, y0, x1, y1 })
+        })
     }
 }
 
@@ -114,6 +148,30 @@ impl<DB: DrawingBackend> DrawingArea<DB, Shift> {
             backend: self.backend.clone(),
             coord: coord_spec,
         }
+    }
+
+    /// Split the drawing area into a grid with specified breakpoints on both X axis and Y axis
+    pub fn split_by_breakpoints<
+        XSize: SizeDesc,
+        YSize: SizeDesc,
+        XS: AsRef<[XSize]>,
+        YS: AsRef<[YSize]>,
+    >(
+        &self,
+        xs: XS,
+        ys: YS,
+    ) -> Vec<Self> {
+        self.rect
+            .split_grid(
+                xs.as_ref().iter().map(|x| x.in_pixels(self)),
+                ys.as_ref().iter().map(|x| x.in_pixels(self)),
+            )
+            .map(|rect| Self {
+                rect: rect.clone(),
+                backend: self.backend.clone(),
+                coord: Shift((rect.x0, rect.y0)),
+            })
+            .collect()
     }
 }
 
@@ -228,6 +286,10 @@ mod drawing_area_tests {
     use crate::charts::{
         drawing::backend_impl::create_mocked_drawing_area,
         elements::{Drawable, PointCollection},
+        style::{
+            colors::{BLACK, BLUE, CYAN, MAGENTA},
+            Color, RED, WHITE, YELLOW,
+        },
         BackendCoord, DrawingBackend,
     };
 
@@ -263,5 +325,52 @@ mod drawing_area_tests {
             points: [(0, 0), (1, 1), (2, 2), (3, 3)],
         };
         drawing_area.draw(element).expect("Drawing Error");
+    }
+
+    #[test]
+    fn test_split_grid() {
+        let colors = [
+            &RED, &BLUE, &YELLOW, &WHITE, &BLACK, &MAGENTA, &CYAN, &BLUE, &RED,
+        ];
+        let breaks: [i32; 5] = [100, 200, 300, 400, 500];
+        for nxb in 0..=5 {
+            for nyb in 0..=5 {
+                let drawing_area = create_mocked_drawing_area(1024, 768, |m| {
+                    for row in 0..=nyb {
+                        for col in 0..=nxb {
+                            let get_bp = |full, limit, id| {
+                                (if id == 0 {
+                                    0
+                                } else if id > limit {
+                                    full
+                                } else {
+                                    breaks[id as usize - 1]
+                                })
+                            };
+
+                            let expected_u = (get_bp(1024, nxb, col), get_bp(768, nyb, row));
+                            let expected_d =
+                                (get_bp(1024, nxb, col + 1), get_bp(768, nyb, row + 1));
+                            let expected_color =
+                                colors[(row * (nxb + 1) + col) as usize % colors.len()];
+
+                            m.check_draw_rect(move |c, _, f, u, d| {
+                                assert_eq!(c, expected_color.to_rgba());
+                                assert!(f);
+                                assert_eq!(u, expected_u);
+                                assert_eq!(d, expected_d);
+                            });
+                        }
+                    }
+                });
+                let result = drawing_area
+                    .split_by_breakpoints(&breaks[0..nxb as usize], &breaks[0..nyb as usize]);
+                for i in 0..result.len() {
+                    result[i]
+                        .fill(colors[i % colors.len()])
+                        .expect("Drawing Error");
+                }
+            }
+        }
     }
 }
