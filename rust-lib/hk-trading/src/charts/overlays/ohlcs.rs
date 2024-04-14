@@ -1,8 +1,4 @@
-use std::{
-    cell::{RefCell, RefMut},
-    ops::Deref,
-    rc::Rc,
-};
+use std::{rc::Rc, sync::Arc};
 
 use chrono::{DateTime, Utc};
 
@@ -18,15 +14,23 @@ use crate::{
         style::{ShapeStyle, GREEN_1, RED_1},
         DrawingBackend,
     },
-    data::{Candles},
+    data::Candles,
 };
 
-use super::OverlayDrawing;
+use super::{OverlayData, OverlayDrawing};
+
+pub struct OhlcOverlaySettings {}
+
+impl OhlcOverlaySettings {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
 
 // Calculate the width of ohlc
 // Create the Ohlc
-pub struct Ohlcs {
-    pub(crate) candles: Option<RefCell<Candles>>,
+pub struct OhlcOverlay {
+    pub(crate) candles: Option<Arc<Candles>>,
     pub(crate) from_time: Option<DateTime<Utc>>,
     pub(crate) to_time: Option<DateTime<Utc>>,
     pub(crate) drawing_area_width: u32,
@@ -34,9 +38,11 @@ pub struct Ohlcs {
 
     previous_from_time: Option<DateTime<Utc>>,
     previous_to_time: Option<DateTime<Utc>>,
+
+    settings: OhlcOverlaySettings,
 }
 
-impl Ohlcs {
+impl OhlcOverlay {
     pub fn new() -> Self {
         return Self {
             candles: None,
@@ -46,6 +52,7 @@ impl Ohlcs {
             candlesticks: None,
             previous_from_time: None,
             previous_to_time: None,
+            settings: OhlcOverlaySettings::new(),
         };
     }
 
@@ -64,7 +71,7 @@ impl Ohlcs {
         self
     }
 
-    pub fn candles(&mut self, candles: RefCell<Candles>) -> &mut Self {
+    pub fn candles(&mut self, candles: Arc<Candles>) -> &mut Self {
         self.candles = Some(candles.clone());
         self
     }
@@ -99,7 +106,7 @@ impl Ohlcs {
     pub fn get_ohlcs(
         from_time: DateTime<Utc>,
         to_time: DateTime<Utc>,
-        candles: RefMut<Candles>,
+        candles: &Candles,
         drawing_area_width: u32,
     ) -> Vec<CandleStick<DateTime<Utc>, f64>> {
         let candle_resolution_seconds = candles.resolution().unwrap().to_seconds();
@@ -130,8 +137,40 @@ impl Ohlcs {
     }
 }
 
+impl OverlayData<Candles, OhlcOverlaySettings> for OhlcOverlay {
+    fn overlay_name(&self) -> &str {
+        "Candles"
+    }
+
+    fn overlay_type(&self) -> &str {
+        "OHLC"
+    }
+
+    fn overlay_data<'a>(&self) -> Option<Arc<Candles>> {
+        if let Some(candles) = self.candles.as_ref() {
+            return Some(candles.clone());
+        }
+        None
+    }
+
+    // fn overlay_data_mut(&mut self) -> Option<&mut Candles> {
+    //     if let Some(candles) = self.candles.as_ref() {
+    //         return Some(candles.write().unwrap().borrow_mut());
+    //     }
+    //     None
+    // }
+
+    fn priority(&self) -> u32 {
+        1
+    }
+
+    fn get_settings(&self) -> &OhlcOverlaySettings {
+        &self.settings
+    }
+}
+
 impl<DB: DrawingBackend>
-    OverlayDrawing<DB, Cartesian2d<RangedDateTime<DateTime<Utc>>, RangedCoordf64>> for Ohlcs
+    OverlayDrawing<DB, Cartesian2d<RangedDateTime<DateTime<Utc>>, RangedCoordf64>> for OhlcOverlay
 {
     fn draw<'a>(
         &mut self,
@@ -150,7 +189,7 @@ impl<DB: DrawingBackend>
             self.candlesticks = Some(Rc::new(Self::get_ohlcs(
                 self.from_time.unwrap(),
                 self.to_time.unwrap(),
-                self.candles.as_mut().unwrap().borrow_mut(),
+                self.overlay_data().unwrap().as_ref(),
                 self.drawing_area_width,
             )));
             self.previous_from_time = self.from_time;
@@ -174,7 +213,7 @@ mod tests {
 
     #[test]
     fn test_get_ohlcs() {
-        let ohlcs = Ohlcs::new();
+        let ohlcs = OhlcOverlay::new();
         let bar_count = 10;
         let drawing_area_width = 400;
         let expected_candle_width = 21; // (400 / (10 + 1)) * 0.6 = 21
@@ -187,12 +226,7 @@ mod tests {
             let open_time = DateTime::<Utc>::from_timestamp(resolution_seconds * i, 0).unwrap();
             let _ = candles.push_data_non_overlapped(open_time, 0.0, 0.0, 0.0, 0.0, None);
         }
-        let candlesticks = Ohlcs::get_ohlcs(
-            from_time,
-            to_time,
-            RefCell::new(candles).borrow_mut(),
-            drawing_area_width,
-        );
+        let candlesticks = OhlcOverlay::get_ohlcs(from_time, to_time, &candles, drawing_area_width);
         assert_eq!(candlesticks.len(), bar_count as usize);
         for candlestick in candlesticks {
             assert_eq!(candlestick.width, expected_candle_width);

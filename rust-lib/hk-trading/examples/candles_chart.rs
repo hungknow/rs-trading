@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 
 use chrono::Duration;
 use hk_trading::charts::drawing::IntoDrawingArea;
-use hk_trading::charts::overlays::Ohlcs;
+use hk_trading::charts::overlays::OhlcOverlay;
 use hk_trading::charts::style::BLACK_1;
 use hk_trading::charts::TradingChartData;
 use hk_trading::charts::{svg_backend::SVGBackend, ChartBuilder};
@@ -28,7 +28,7 @@ fn main() {
     /*
        READ CSV from file
     */
-    let (csv_file_metadata, candles) = CandleCSVDataSource::load_csv_file(
+    let (_, candles) = CandleCSVDataSource::load_csv_file(
         csv_file_path,
         Some(CandleCSVLoadOption {
             limit: Some(30),
@@ -53,10 +53,16 @@ fn main() {
        Generate RSI data
     */
     let (highest, lowest) = candles.borrow().get_highest_lowest().unwrap();
-    let mut ohlcs = Ohlcs::new();
+
+    /*
+       Prepare overlays
+    */
+    let mut ohlcs = OhlcOverlay::new();
     ohlcs
         .drawing_area_width(width)
-        .candles(RefCell::new(candles));
+        .candles(RefCell::new(candles))
+        .from_time(from_time)
+        .to_time(to_time);
 
     /*
        Draw chart
@@ -64,10 +70,6 @@ fn main() {
     let drawing_backend = SVGBackend::with_file_path(candle_chart_csv_file_path, (width, height));
     let drawing_area = drawing_backend.into_drawing_area();
     drawing_area.fill(&BLACK_1).unwrap();
-
-    // Set the time range to display on chart
-    ohlcs.from_time(from_time);
-    ohlcs.to_time(to_time);
 
     let mut chart_context = ChartBuilder::on(&drawing_area)
         .build_cartesian_2d(
