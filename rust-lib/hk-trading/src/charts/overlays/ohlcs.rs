@@ -11,15 +11,14 @@ use crate::{
         context::ChartContext,
         coord::{
             cartesian::Cartesian2d,
-            ranged1d::Ranged,
             types::{RangedCoordf64, RangedDateTime},
         },
         drawing::DrawingAreaErrorKind,
         elements::CandleStick,
-        style::{ShapeStyle, GREEN, RED},
+        style::{ShapeStyle, GREEN_1, RED_1},
         DrawingBackend,
     },
-    data::{Candle, Candles},
+    data::{Candles},
 };
 
 use super::OverlayDrawing;
@@ -120,8 +119,8 @@ impl Ohlcs {
                 candles.highs[i],
                 candles.lows[i],
                 candles.closes[i],
-                Into::<ShapeStyle>::into(&GREEN).filled(),
-                Into::<ShapeStyle>::into(&RED).filled(),
+                Into::<ShapeStyle>::into(&GREEN_1).filled(),
+                Into::<ShapeStyle>::into(&RED_1).filled(),
                 candle_width as u32,
             );
             candlestick_elements.push(c);

@@ -16,8 +16,11 @@ macro_rules! define_color {
 
 define_color!(WHITE, 255, 255, 255, "White");
 define_color!(BLACK, 0, 0, 0, "Black");
+define_color!(BLACK_1, 47, 50, 64, "Black 1");
 define_color!(RED, 255, 0, 0, "Red");
+define_color!(RED_1, 229, 65, 90, "Red Candle");
 define_color!(GREEN, 0, 255, 0, "Green");
+define_color!(GREEN_1, 35, 167, 118, "Green Candle");
 define_color!(BLUE, 0, 0, 255, "Blue");
 define_color!(YELLOW, 255, 255, 0, "Yellow");
 define_color!(CYAN, 0, 255, 255, "Cyan");

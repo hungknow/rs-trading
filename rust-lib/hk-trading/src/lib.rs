@@ -26,3 +26,7 @@ use hk_infra::if_wasm;
 if_wasm! {
     mod wasm;
 }
+
+
+mod utils;
+pub use utils::*;

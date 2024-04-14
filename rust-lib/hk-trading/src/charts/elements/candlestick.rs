@@ -75,12 +75,7 @@ impl<X, Y: PartialOrd, DB: DrawingBackend> Drawable<DB> for CandleStick<X, Y> {
             }
             let l = self.width as i32 / 2;
             // The left and right of the same width
-            let r = l;//self.width as i32 - l;
-
-            // Push the candlestick to the half width
-            for p in points.iter_mut() {
-                p.0 += l;
-            }
+            let r = l; //self.width as i32 - l;
 
             backend.draw_line(points[0], points[1], &self.style)?;
             backend.draw_line(points[2], points[3], &self.style)?;
