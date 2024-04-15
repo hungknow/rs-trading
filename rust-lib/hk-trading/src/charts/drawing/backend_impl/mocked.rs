@@ -16,6 +16,7 @@ pub struct MockedBackend {
     pub num_draw_rect_call: u32,
     check_draw_line: VecDeque<Box<dyn FnMut(RGBAColor, u32, BackendCoord, BackendCoord)>>,
     check_draw_rect: VecDeque<Box<dyn FnMut(RGBAColor, u32, bool, BackendCoord, BackendCoord)>>,
+    drop_check: Option<Box<dyn FnMut(&Self)>>,
 }
 
 macro_rules! def_set_checker_func {
@@ -44,6 +45,7 @@ impl MockedBackend {
             num_draw_rect_call: 0,
             check_draw_line: vec![].into(),
             check_draw_rect: vec![].into(),
+            drop_check: None,
         }
     }
 
@@ -56,6 +58,7 @@ impl MockedBackend {
         BackendCoord,
         BackendCoord
     );
+    def_set_checker_func!(drop_check, &Self);
 }
 
 #[derive(Debug)]

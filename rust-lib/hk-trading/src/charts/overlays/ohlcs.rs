@@ -8,7 +8,6 @@ use crate::{
         coord::{
             cartesian::Cartesian2d,
             types::{RangedCoordf64, RangedDateTime},
-            CoordTranslate,
         },
         drawing::DrawingAreaErrorKind,
         elements::CandleStick,

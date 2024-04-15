@@ -7,6 +7,9 @@ use super::{
     context::ChartContext, coord::CoordTranslate, drawing::DrawingAreaErrorKind, DrawingBackend,
 };
 
+mod empty;
+pub use empty::EmptyOverlay;
+
 mod ohlcs;
 pub use ohlcs::OhlcOverlay;
 

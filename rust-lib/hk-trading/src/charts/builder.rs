@@ -96,31 +96,31 @@ impl<'a, DB: DrawingBackend> ChartBuilder<'a, DB> {
         // main_area_pixel_range.1.end -= 1;
         // main_area_pixel_range.1 = main_area_pixel_range.1.end..main_area_pixel_range.1.start;
 
-        let mut off_chart_drawings = vec![];
+        let mut off_chart_drawing_areas = vec![];
+        let mut right_side_off_chart_drawing_areas = vec![];
         let offchart_starting_index = 2;
         for off_chart_index in 0..off_chart_count {
             let current_index = offchart_starting_index + off_chart_index as usize;
 
-            off_chart_drawings.push(ChartContext {
-                drawing_area: split_drawing_area[current_index].apply_coord_spec(Cartesian2d::new(
+            off_chart_drawing_areas.push(split_drawing_area[current_index].apply_coord_spec(
+                Cartesian2d::new(
                     x_spec.clone(),
                     y_spec.clone(),
                     split_drawing_area[current_index].get_pixel_range(),
-                )),
-                right_side_bar_area: Some(split_drawing_area[1].clone()),
-            })
+                ),
+            ));
+            right_side_off_chart_drawing_areas.push(split_drawing_area[1].clone());
         }
         let trading_chart_context = TradingChartContext {
             root_drawing_area: root_drawing_area,
-            main_drawing_area: ChartContext {
-                drawing_area: split_drawing_area[0].apply_coord_spec(Cartesian2d::new(
-                    x_spec.clone(),
-                    y_spec.clone(),
-                    split_drawing_area[0].get_pixel_range(),
-                )),
-                right_side_bar_area: Some(split_drawing_area[1].clone()),
-            },
-            off_chart_drawings,
+            main_drawing_area: split_drawing_area[0].apply_coord_spec(Cartesian2d::new(
+                x_spec.clone(),
+                y_spec.clone(),
+                split_drawing_area[0].get_pixel_range(),
+            )),
+            right_side_main_drawing_area: split_drawing_area[1].clone(),
+            off_chart_drawing_areas,
+            right_side_off_chart_drawing_areas,
             x_axis: split_drawing_area[split_drawing_area.len() - 1].clone(),
         };
 
@@ -129,34 +129,34 @@ impl<'a, DB: DrawingBackend> ChartBuilder<'a, DB> {
         Ok(trading_chart_context)
     }
 
-    pub fn build_cartesian_2d<X: AsRangedCoord, Y: AsRangedCoord>(
-        &mut self,
-        x_spec: X,
-        y_spec: Y,
-    ) -> Result<
-        ChartContext<DB, Cartesian2d<X::CoordDescType, Y::CoordDescType>>,
-        DrawingAreaErrorKind<DB::ErrorType>,
-    > {
-        let mut drawing_area = DrawingArea::clone(self.root_area);
-        let mut pixel_range = drawing_area.get_pixel_range();
-        let mut drawing_area_dim = drawing_area.dim_in_pixel();
+    // pub fn build_cartesian_2d<X: AsRangedCoord, Y: AsRangedCoord>(
+    //     &mut self,
+    //     x_spec: X,
+    //     y_spec: Y,
+    // ) -> Result<
+    //     ChartContext<DB, Cartesian2d<X::CoordDescType, Y::CoordDescType>>,
+    //     DrawingAreaErrorKind<DB::ErrorType>,
+    // > {
+    //     let mut drawing_area = DrawingArea::clone(self.root_area);
+    //     let mut pixel_range = drawing_area.get_pixel_range();
+    //     let mut drawing_area_dim = drawing_area.dim_in_pixel();
 
-        let side_bar_width = Self::calculate_sidebar_width();
-        let x_breakpoints = vec![drawing_area_dim.0 - side_bar_width];
-        let y_breakpoints: Vec<u32> = vec![];
+    //     let side_bar_width = Self::calculate_sidebar_width();
+    //     let x_breakpoints = vec![drawing_area_dim.0 - side_bar_width];
+    //     let y_breakpoints: Vec<u32> = vec![];
 
-        let splitted_drawing = drawing_area.split_by_breakpoints(x_breakpoints, y_breakpoints);
+    //     let splitted_drawing = drawing_area.split_by_breakpoints(x_breakpoints, y_breakpoints);
 
-        // Take out the plotting area
-        Ok(ChartContext {
-            right_side_bar_area: Some(splitted_drawing[1].clone()),
-            drawing_area: drawing_area.apply_coord_spec(Cartesian2d::new(
-                x_spec,
-                y_spec,
-                pixel_range,
-            )),
-            // off_chart_drawings: vec![],
-            // series_anno: vec![],
-        })
-    }
+    //     // Take out the plotting area
+    //     Ok(ChartContext {
+    //         // right_side_bar_area: Some(splitted_drawing[1].clone()),
+    //         drawing_area: &drawing_area.apply_coord_spec(Cartesian2d::new(
+    //             x_spec,
+    //             y_spec,
+    //             pixel_range,
+    //         )),
+    //         // off_chart_drawings: vec![],
+    //         // series_anno: vec![],
+    //     })
+    // }
 }

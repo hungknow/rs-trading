@@ -42,6 +42,11 @@ pub trait PointCollection<'a, Coord, CM = BackendCoordOnly> {
     fn point_iter(self) -> Self::IntoIter;
 }
 
+
+mod basic_shapes;
+pub use basic_shapes::*;
+
+
 mod candlestick;
 pub use candlestick::*;
 

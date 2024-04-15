@@ -1,4 +1,4 @@
-use crate::charts::BackendColor;
+use crate::charts::{BackendColor, BackendStyle};
 
 use super::ShapeStyle;
 
@@ -31,6 +31,14 @@ pub trait Color {
         Self: Sized,
     {
         Into::<ShapeStyle>::into(self).filled()
+    }
+
+    /// Make a shape style with stroke width from a color
+    fn stroke_width(&self, width: u32) -> ShapeStyle
+    where
+        Self: Sized,
+    {
+        Into::<ShapeStyle>::into(self).stroke_width(width)
     }
 }
 
