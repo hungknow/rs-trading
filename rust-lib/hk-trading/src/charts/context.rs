@@ -7,16 +7,20 @@ use super::{
     DrawingBackend,
 };
 
-pub struct ChartContext<DB: DrawingBackend, CT: CoordTranslate> {
-    pub right_side_bar_area: Option<DrawingArea<DB, Shift>>,
+pub struct ChartContext<'a, DB: DrawingBackend, CT: CoordTranslate> {
+    // pub right_side_bar_area: Option<DrawingArea<DB, Shift>>,
     // The main drawing area (for Ohlcs)
-    pub drawing_area: DrawingArea<DB, CT>,
+    pub drawing_area: &'a DrawingArea<DB, CT>,
     // The drawing area for off chart drawings (Indicators draw their data here)
     // pub(crate) off_chart_drawings: Vec<DrawingArea<DB, CT>>,
     // pub(crate) series_anno: Vec<SeriesAnno<'a, DB>>,
 }
 
-impl<'a, DB: DrawingBackend, CT: CoordTranslate> ChartContext<DB, CT> {
+impl<'a, DB: DrawingBackend, CT: CoordTranslate> ChartContext<'a, DB, CT> {
+    pub fn new(drawing_area: &'a DrawingArea<DB, CT>) -> Self {
+        Self { drawing_area }
+    }
+
     pub fn draw_series<B, E, R, S>(
         &mut self,
         series: S,
@@ -55,9 +59,12 @@ impl<'a, DB: DrawingBackend, CT: CoordTranslate> ChartContext<DB, CT> {
 // +----------+------------------------------+------+
 pub struct TradingChartContext<DB: DrawingBackend, CT: CoordTranslate> {
     pub root_drawing_area: DrawingArea<DB, Shift>,
-    pub main_drawing_area: ChartContext<DB, CT>,
+    pub main_drawing_area: DrawingArea<DB, CT>,
+    pub right_side_main_drawing_area: DrawingArea<DB, Shift>,
     // The drawing area for off chart drawings (Indicators draw their data here)
-    pub off_chart_drawings: Vec<ChartContext<DB, CT>>,
+    pub off_chart_drawing_areas: Vec<DrawingArea<DB, CT>>,
+    pub right_side_off_chart_drawing_areas: Vec<DrawingArea<DB, Shift>>,
+
     // The X-axis area
     pub x_axis: DrawingArea<DB, Shift>,
     // pub(crate) y_axis: DrawingArea<DB, CT>,

@@ -9,7 +9,7 @@ use crate::{
 };
 
 use super::{
-    context::ChartContext,
+    context::{ChartContext, TradingChartContext},
     coord::{
         cartesian::Cartesian2d,
         types::{RangedCoordf64, RangedDateTime},
@@ -28,6 +28,7 @@ pub struct TradingChartData<DB: DrawingBackend, CT: CoordTranslate> {
 
     // Overlays
     pub on_chart: Vec<Box<dyn Overlay<DB, CT>>>,
+    pub off_chart: Vec<Box<dyn Overlay<DB, CT>>>,
     // pub ohlc_overlay: Option<OhlcOverlay>,
     // pub ema_overlay: Option<IndicatorContainer<ExponentialMovingAverage>>,
 }
@@ -79,11 +80,17 @@ impl<DB: DrawingBackend, CT: CoordTranslate> TradingChartData<DB, CT> {
             symbol_identity: None,
             resolution: None,
             on_chart: vec![],
+            off_chart: vec![],
         }
     }
 
     pub fn add_on_chart_overlay(&mut self, overlay: Box<dyn Overlay<DB, CT>>) -> &mut Self {
         self.on_chart.push(overlay);
+        self
+    }
+
+    pub fn add_off_chart_overlay(&mut self, overlay: Box<dyn Overlay<DB, CT>>) -> &mut Self {
+        self.off_chart.push(overlay);
         self
     }
 
@@ -135,7 +142,7 @@ impl<DB: DrawingBackend, CT: CoordTranslate> TradingChartData<DB, CT> {
 
     pub fn draw<'a>(
         &mut self,
-        chart_context: &mut ChartContext<
+        trading_chart_context: &mut TradingChartContext<
             DB,
             CT,
             // Cartesian2d<RangedDateTime<DateTime<Utc>>, RangedCoordf64>,
@@ -144,24 +151,22 @@ impl<DB: DrawingBackend, CT: CoordTranslate> TradingChartData<DB, CT> {
     where
         DB: DrawingBackend,
     {
+        // The on-chart overlays will be drawed on the main drawing area
         for overlay in self.on_chart.iter_mut() {
-            overlay.draw(chart_context)?;
+            overlay.draw(&mut ChartContext::new(
+                &trading_chart_context.main_drawing_area,
+            ))?;
         }
-        // self.on_chart.iter_mut().for_each(|overlay| {
-        //     overlay
-        //         .downcast_mut::<Box<dyn OverlayDrawing<DB, Cartesian2d<RangedDateTime<DateTime<Utc>>, RangedCoordf64>>>>()
-        //         .unwrap()
-        //         .draw(chart_context)
-        //         .unwrap();
-        // });
-        // Draw ohlc
-        // if let Some(ohlc_overlay) = self.ohlc_overlay.as_mut() {
-        //     ohlc_overlay.draw(chart_context)?;
-        // }
 
-        /*
-           Overlays
-        */
+        // Each offchart overlay will be drawed on its corresponding offchart drawing area
+        for (index, overlay) in self.off_chart.iter_mut().enumerate() {
+            overlay.draw(&mut ChartContext::new(
+                &trading_chart_context.off_chart_drawing_areas[index],
+            ))?;
+        }
+
+        // Draw the bottom axis
+
         Ok(())
     }
 }
@@ -170,7 +175,10 @@ impl<DB: DrawingBackend, CT: CoordTranslate> TradingChartData<DB, CT> {
 mod tests {
     use std::sync::Arc;
 
-    use crate::{charts::drawing::create_mocked_drawing_area, data::Candles};
+    use crate::{
+        charts::{drawing::create_mocked_drawing_area, ChartBuilder},
+        data::Candles,
+    };
 
     use super::*;
 
@@ -201,12 +209,8 @@ mod tests {
 
     #[test]
     fn test_draw() {
-        let mut trading_chart = TradingChartData {
-            display_time_range: None,
-            symbol_identity: None,
-            resolution: None,
-            on_chart: vec![],
-        };
+        let mut trading_chart = TradingChartData::new();
+
         // prepare ohlc data
         let from_time = DateTime::<Utc>::from_timestamp(0, 0).unwrap();
         let to_time = DateTime::<Utc>::from_timestamp(2, 0).unwrap();
@@ -236,20 +240,11 @@ mod tests {
         ohlcs.candles(Arc::new(candles));
 
         // create backend for drawing
-        let mut mocked_drawing_area = create_mocked_drawing_area(1000, 500, |_| {})
-            .apply_coord_spec(
-                Cartesian2d::<RangedDateTime<DateTime<Utc>>, RangedCoordf64>::new(
-                    from_time..to_time,
-                    0.0..200.0,
-                    (0..1024, 0..768),
-                ),
-            );
+        let mocked_drawing_area = create_mocked_drawing_area(1000, 500, |_| {});
 
-        // create chart context
-        let mut chart_context = ChartContext {
-            drawing_area: mocked_drawing_area,
-            right_side_bar_area: None,
-        };
+        let mut chart_context = ChartBuilder::on(&mocked_drawing_area)
+            .build_trading_chart_context(from_time..to_time, 0.0..200.0, 0)
+            .unwrap();
 
         // draw
         trading_chart.add_on_chart_overlay(Box::new(ohlcs));

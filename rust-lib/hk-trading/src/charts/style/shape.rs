@@ -21,6 +21,14 @@ impl ShapeStyle {
             stroke_width: self.stroke_width,
         }
     }
+
+    pub fn stroke_width(&self, width: u32) -> Self {
+        Self {
+            color: self.color.to_rgba(),
+            filled: self.filled,
+            stroke_width: width,
+        }
+    }
 }
 
 impl<T: Color> From<T> for ShapeStyle {

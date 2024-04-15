@@ -16,6 +16,7 @@ pub struct MockedBackend {
     pub num_draw_rect_call: u32,
     check_draw_line: VecDeque<Box<dyn FnMut(RGBAColor, u32, BackendCoord, BackendCoord)>>,
     check_draw_rect: VecDeque<Box<dyn FnMut(RGBAColor, u32, bool, BackendCoord, BackendCoord)>>,
+    drop_check: Option<Box<dyn FnMut(&Self)>>,
 }
 
 macro_rules! def_set_checker_func {
@@ -44,6 +45,7 @@ impl MockedBackend {
             num_draw_rect_call: 0,
             check_draw_line: vec![].into(),
             check_draw_rect: vec![].into(),
+            drop_check: None,
         }
     }
 
@@ -56,6 +58,25 @@ impl MockedBackend {
         BackendCoord,
         BackendCoord
     );
+    def_set_checker_func!(drop_check, &Self);
+}
+
+impl Drop for MockedBackend {
+    fn drop(&mut self) {
+        // `self.drop_check` is typically a testing function; it can panic.
+        // The current `drop` call may be a part of stack unwinding caused
+        // by another panic. If so, we should never call it.
+        if std::thread::panicking() {
+            return;
+        }
+
+        let mut temp = None;
+        std::mem::swap(&mut temp, &mut self.drop_check);
+
+        if let Some(mut checker) = temp {
+            checker(self);
+        }
+    }
 }
 
 #[derive(Debug)]
