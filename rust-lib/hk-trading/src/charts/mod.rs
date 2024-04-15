@@ -13,6 +13,7 @@ pub mod elements;
 pub mod coord;
 pub mod drawing;
 mod context;
+pub use context::*;
 pub mod overlays;
 pub mod style;
 pub mod svg_backend;

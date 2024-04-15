@@ -1,6 +1,7 @@
 use std::borrow::Borrow;
 
-use super::{
+use crate::charts::{
+    // coord::{CoordTranslate, Shift},
     coord::{CoordTranslate, Shift},
     drawing::{DrawingArea, DrawingAreaErrorKind},
     elements::{CoordMapper, Drawable, PointCollection},

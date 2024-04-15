@@ -85,16 +85,5 @@ fn main() {
 
     trading_chart_data.draw(chart_context.borrow_mut()).unwrap();
 
-    // chart_context.off_chart_drawings[0]
-    //     .drawing_area
-    //     .fill(&BLACK)
-    //     .unwrap();
-    // chart_context
-    //     .main_drawing_area
-    //     .right_side_bar_area
-    //     .unwrap()
-    //     .fill(&BLUE)
-    //     .unwrap();
-
     drawing_area.present().expect("Expect");
 }
