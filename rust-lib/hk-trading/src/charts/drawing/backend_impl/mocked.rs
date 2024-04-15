@@ -61,6 +61,24 @@ impl MockedBackend {
     def_set_checker_func!(drop_check, &Self);
 }
 
+impl Drop for MockedBackend {
+    fn drop(&mut self) {
+        // `self.drop_check` is typically a testing function; it can panic.
+        // The current `drop` call may be a part of stack unwinding caused
+        // by another panic. If so, we should never call it.
+        if std::thread::panicking() {
+            return;
+        }
+
+        let mut temp = None;
+        std::mem::swap(&mut temp, &mut self.drop_check);
+
+        if let Some(mut checker) = temp {
+            checker(self);
+        }
+    }
+}
+
 #[derive(Debug)]
 pub struct MockedError;
 
