@@ -4,7 +4,7 @@ use std::sync::Arc;
 use chrono::Duration;
 use hk_trading::charts::drawing::IntoDrawingArea;
 use hk_trading::charts::overlays::{EmptyOverlay, OhlcOverlay};
-use hk_trading::charts::style::{BLACK, BLACK_1, BLUE};
+use hk_trading::charts::style::BLACK_1;
 use hk_trading::charts::TradingChartData;
 use hk_trading::charts::{svg_backend::SVGBackend, ChartBuilder};
 use hk_trading::data::{CandleCSVDataSource, CandleCSVLoadOption};

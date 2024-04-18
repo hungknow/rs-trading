@@ -17,6 +17,7 @@ use super::{
     },
     drawing::DrawingAreaErrorKind,
     overlays::{OhlcOverlay, Overlay},
+    style::colors::{OVERLAY_BACKGROUND_COLOR, RIGHT_SIDEBAR_BACKGROUND_COLOR},
     DrawingBackend,
 };
 
@@ -161,6 +162,9 @@ impl<DB: DrawingBackend>
         main_drawing_area_chart_context
             .configure_mesh()
             .draw_mesh()?;
+        trading_chart_context
+            .right_side_main_drawing_area
+            .fill(&RIGHT_SIDEBAR_BACKGROUND_COLOR)?;
 
         // The on-chart overlays will be drawed on the main drawing area
         for overlay in self.on_chart.iter_mut() {
@@ -171,9 +175,15 @@ impl<DB: DrawingBackend>
 
         // Each offchart overlay will be drawed on its corresponding offchart drawing area
         for (index, overlay) in self.off_chart.iter_mut().enumerate() {
-            overlay.draw(&mut ChartContext::new(
-                &trading_chart_context.off_chart_drawing_areas[index],
-            ))?;
+            let offchart_chart_context =
+                &mut ChartContext::new(&trading_chart_context.off_chart_drawing_areas[index]);
+            offchart_chart_context
+                .drawing_area
+                .fill(&OVERLAY_BACKGROUND_COLOR)?;
+            trading_chart_context.right_side_off_chart_drawing_areas[index]
+                .fill(&RIGHT_SIDEBAR_BACKGROUND_COLOR)?;
+
+            overlay.draw(offchart_chart_context)?;
         }
 
         // Draw the bottom axis

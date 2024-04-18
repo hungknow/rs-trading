@@ -6,7 +6,7 @@ use super::{
         ranged1d::{BoldPoints, Ranged, ValueFormatter},
     },
     drawing::DrawingAreaErrorKind,
-    style::{Color, RGBColor, ShapeStyle},
+    style::{colors::GRID_COLOR, Color, RGBColor, ShapeStyle},
     ChartContext, DrawingBackend,
 };
 
@@ -42,7 +42,7 @@ where
     pub fn draw_mesh(&mut self) -> Result<(), DrawingAreaErrorKind<DB::ErrorType>> {
         let target = self.target.borrow_mut();
 
-        let default_mesh_color_1 = RGBColor(0, 0, 0).mix(0.2);
+        let default_mesh_color_1 = GRID_COLOR;//RGBColor(0, 0, 0).mix(0.2);
         let default_mesh_color_2 = RGBColor(0, 0, 0).mix(0.1);
 
         let bold_style = self

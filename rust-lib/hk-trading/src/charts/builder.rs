@@ -109,7 +109,7 @@ impl<'a, DB: DrawingBackend> ChartBuilder<'a, DB> {
                     split_drawing_area[current_index].get_pixel_range(),
                 ),
             ));
-            right_side_off_chart_drawing_areas.push(split_drawing_area[1].clone());
+            right_side_off_chart_drawing_areas.push(split_drawing_area[current_index + 1].clone());
         }
         let trading_chart_context = TradingChartContext {
             root_drawing_area: root_drawing_area,
