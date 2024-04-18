@@ -1,8 +1,10 @@
 use std::ops::Range;
 
 use crate::charts::{
-    coord::{ranged1d::Ranged, CoordTranslate},
-    BackendCoord,
+    coord::{
+        ranged1d::{KeyPointHint, Ranged},
+        CoordTranslate,
+    }, style::ShapeStyle, BackendCoord, DrawingBackend, DrawingErrorKind
 };
 
 /// A 2D Cartesian coordinate system described by two 1D ranged coordinate specs.
@@ -29,6 +31,44 @@ impl<X: Ranged, Y: Ranged> Cartesian2d<X, Y> {
             back_x: (actual.0.start, actual.0.end),
             back_y: (actual.1.start, actual.1.end),
         }
+    }
+
+    /// Draw the mesh for the coordinate system
+    pub fn draw_mesh<
+        E,
+        DrawMesh: FnMut(MeshLine<X, Y>) -> Result<(), E>,
+        XH: KeyPointHint,
+        YH: KeyPointHint,
+    >(
+        &self,
+        h_limit: YH,
+        v_limit: XH,
+        mut draw_mesh: DrawMesh,
+    ) -> Result<(), E> {
+        let (xkp, ykp) = (
+            self.logic_x.key_points(v_limit),
+            self.logic_y.key_points(h_limit),
+        );
+
+        for logic_x in xkp {
+            let x = self.logic_x.map(&logic_x, self.back_x);
+            draw_mesh(MeshLine::XMesh(
+                (x, self.back_y.0),
+                (x, self.back_y.1),
+                &logic_x,
+            ))?;
+        }
+
+        for logic_y in ykp {
+            let y = self.logic_y.map(&logic_y, self.back_y);
+            draw_mesh(MeshLine::YMesh(
+                (self.back_x.0, y),
+                (self.back_x.1, y),
+                &logic_y,
+            ))?;
+        }
+
+        Ok(())
     }
 
     /// Get the range of X axis
@@ -70,5 +110,28 @@ impl<X: Ranged, Y: Ranged> CoordTranslate for Cartesian2d<X, Y> {
             self.logic_x.map(&from.0, self.back_x),
             self.logic_y.map(&from.1, self.back_y),
         )
+    }
+}
+
+/// Represent a coordinate mesh for the two ranged value coordinate system
+pub enum MeshLine<'a, X: Ranged, Y: Ranged> {
+    /// Used to plot the horizontal lines of the mesh
+    XMesh(BackendCoord, BackendCoord, &'a X::ValueType),
+    /// Used to plot the vertical lines of the mesh
+    YMesh(BackendCoord, BackendCoord, &'a Y::ValueType),
+}
+
+impl<'a, X: Ranged, Y: Ranged> MeshLine<'a, X, Y> {
+    /// Draw a single mesh line onto the backend
+    pub fn draw<DB: DrawingBackend>(
+        &self,
+        backend: &mut DB,
+        style: &ShapeStyle,
+    ) -> Result<(), DrawingErrorKind<DB::ErrorType>> {
+        let (&left, &right) = match self {
+            MeshLine::XMesh(a, b, _) => (a, b),
+            MeshLine::YMesh(a, b, _) => (a, b),
+        };
+        backend.draw_line(left, right, style)
     }
 }

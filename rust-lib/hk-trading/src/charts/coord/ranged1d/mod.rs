@@ -13,6 +13,30 @@ impl DefaultValueFormatOption for DefaultFormatting {}
 pub struct NoDefaultFormatting;
 impl DefaultValueFormatOption for NoDefaultFormatting {}
 
+use std::fmt::Debug;
+
+/// Determine how we can format a value in a coordinate system by default
+pub trait ValueFormatter<V> {
+    /// Format the value
+    fn format(_value: &V) -> String {
+        panic!("Unimplemented formatting method");
+    }
+    /// Determine how we can format a value in a coordinate system by default
+    fn format_ext(&self, value: &V) -> String {
+        Self::format(value)
+    }
+}
+
+// By default the value is formatted by the debug trait
+impl<R: Ranged<FormatOption = DefaultFormatting>> ValueFormatter<R::ValueType> for R
+where
+    R::ValueType: Debug,
+{
+    fn format(value: &R::ValueType) -> String {
+        format!("{:?}", value)
+    }
+}
+
 /// Specify the weight of key points.
 pub enum KeyPointWeight {
     /// Allows only bold key points
@@ -49,6 +73,50 @@ pub trait KeyPointHint {
 impl KeyPointHint for usize {
     fn max_num_points(&self) -> usize {
         *self
+    }
+
+    fn weight(&self) -> KeyPointWeight {
+        KeyPointWeight::Any
+    }
+}
+
+///  The key point hint indicates we only need key point for the bold grid lines
+pub struct BoldPoints(pub usize);
+
+impl KeyPointHint for BoldPoints {
+    fn max_num_points(&self) -> usize {
+        self.0
+    }
+
+    fn weight(&self) -> KeyPointWeight {
+        KeyPointWeight::Bold
+    }
+}
+
+
+/// The key point hint indicates that we are using the key points for the light grid lines
+pub struct LightPoints {
+    bold_points_num: usize,
+    light_limit: usize,
+}
+
+impl LightPoints {
+    /// Create a new light key point hind
+    pub fn new(bold_count: usize, requested: usize) -> Self {
+        Self {
+            bold_points_num: bold_count,
+            light_limit: requested,
+        }
+    }
+}
+
+impl KeyPointHint for LightPoints {
+    fn max_num_points(&self) -> usize {
+        self.light_limit
+    }
+
+    fn bold_points(&self) -> usize {
+        self.bold_points_num
     }
 
     fn weight(&self) -> KeyPointWeight {

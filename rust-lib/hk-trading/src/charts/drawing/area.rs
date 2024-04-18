@@ -1,5 +1,5 @@
 use crate::charts::{
-    coord::{cartesian::Cartesian2d, ranged1d::Ranged, CoordTranslate, Shift},
+    coord::{cartesian::{Cartesian2d, MeshLine}, ranged1d::{KeyPointHint, Ranged}, CoordTranslate, Shift},
     elements::{CoordMapper, Drawable, PointCollection},
     style::{Color, SizeDesc},
     DrawingBackend, DrawingErrorKind,
@@ -177,20 +177,20 @@ impl<DB: DrawingBackend> DrawingArea<DB, Shift> {
 
 impl<DB: DrawingBackend, X: Ranged, Y: Ranged> DrawingArea<DB, Cartesian2d<X, Y>> {
     /// Draw the mesh on a area
-    // pub fn draw_mesh<DrawFunc, YH: KeyPointHint, XH: KeyPointHint>(
-    //     &self,
-    //     mut draw_func: DrawFunc,
-    //     y_count_max: YH,
-    //     x_count_max: XH,
-    // ) -> Result<(), DrawingAreaErrorKind<DB::ErrorType>>
-    // where
-    //     DrawFunc: FnMut(&mut DB, MeshLine<X, Y>) -> Result<(), DrawingErrorKind<DB::ErrorType>>,
-    // {
-    //     self.backend_ops(move |b| {
-    //         self.coord
-    //             .draw_mesh(y_count_max, x_count_max, |line| draw_func(b, line))
-    //     })
-    // }
+    pub fn draw_mesh<DrawFunc, YH: KeyPointHint, XH: KeyPointHint>(
+        &self,
+        mut draw_func: DrawFunc,
+        y_count_max: YH,
+        x_count_max: XH,
+    ) -> Result<(), DrawingAreaErrorKind<DB::ErrorType>>
+    where
+        DrawFunc: FnMut(&mut DB, MeshLine<X, Y>) -> Result<(), DrawingErrorKind<DB::ErrorType>>,
+    {
+        self.backend_ops(move |b| {
+            self.coord
+                .draw_mesh(y_count_max, x_count_max, |line| draw_func(b, line))
+        })
+    }
 
     /// Get the range of X of the guest coordinate for current drawing area
     pub fn get_x_range(&self) -> Range<X::ValueType> {

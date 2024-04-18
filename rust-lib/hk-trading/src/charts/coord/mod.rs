@@ -24,5 +24,5 @@ mod ranged2d;
 
 /// Groups Cartesian ranged coordinates in 2d and 3d.
 pub mod cartesian {
-    pub use super::ranged2d::cartesian::{Cartesian2d};
+    pub use super::ranged2d::cartesian::{Cartesian2d, MeshLine};
 }

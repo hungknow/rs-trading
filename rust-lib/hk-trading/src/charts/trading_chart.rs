@@ -139,18 +139,29 @@ impl<DB: DrawingBackend, CT: CoordTranslate> TradingChartData<DB, CT> {
 
         //     self.display_time_range = Some((time_range_from, time_range_to));
     }
+}
 
+impl<DB: DrawingBackend>
+    TradingChartData<DB, Cartesian2d<RangedDateTime<DateTime<Utc>>, RangedCoordf64>>
+{
     pub fn draw<'a>(
         &mut self,
         trading_chart_context: &mut TradingChartContext<
             DB,
-            CT,
-            // Cartesian2d<RangedDateTime<DateTime<Utc>>, RangedCoordf64>,
+            // CT,
+            Cartesian2d<RangedDateTime<DateTime<Utc>>, RangedCoordf64>,
         >,
     ) -> Result<(), DrawingAreaErrorKind<DB::ErrorType>>
     where
         DB: DrawingBackend,
     {
+        let main_drawing_area_chart_context =
+            &mut ChartContext::new(&trading_chart_context.main_drawing_area);
+        // Draw the grid (mesh) on the main drawing area
+        main_drawing_area_chart_context
+            .configure_mesh()
+            .draw_mesh()?;
+
         // The on-chart overlays will be drawed on the main drawing area
         for overlay in self.on_chart.iter_mut() {
             overlay.draw(&mut ChartContext::new(
