@@ -1,5 +1,5 @@
 use crate::charts::coord::ranged1d::{
-    AsRangedCoord, DefaultFormatting, KeyPointHint, NoDefaultFormatting, Ranged,
+    AsRangedCoord, DefaultFormatting, KeyPointHint, NoDefaultFormatting, Ranged, ValueFormatter,
 };
 use std::ops::Range;
 
@@ -210,6 +210,16 @@ make_numeric_coord!(
     "The ranged coordinate for type f32",
     NoDefaultFormatting
 );
+impl ValueFormatter<f32> for RangedCoordf32 {
+    fn format(value: &f32) -> String {
+        crate::charts::data::float::FloatPrettyPrinter {
+            allow_scientific: false,
+            min_decimal: 1,
+            max_decimal: 5,
+        }
+        .print(*value as f64)
+    }
+}
 make_numeric_coord!(
     f64,
     RangedCoordf64,
@@ -217,6 +227,16 @@ make_numeric_coord!(
     "The ranged coordinate for type f64",
     NoDefaultFormatting
 );
+impl ValueFormatter<f64> for RangedCoordf64 {
+    fn format(value: &f64) -> String {
+        crate::charts::data::float::FloatPrettyPrinter {
+            allow_scientific: false,
+            min_decimal: 1,
+            max_decimal: 5,
+        }
+        .print(*value)
+    }
+}
 make_numeric_coord!(
     u32,
     RangedCoordu32,

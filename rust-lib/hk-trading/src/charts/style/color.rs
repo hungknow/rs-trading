@@ -18,6 +18,13 @@ pub trait Color {
         self.to_backend_color().alpha
     }
 
+    /// Mix the color with given opacity
+    fn mix(&self, value: f64) -> RGBAColor {
+        let (r, g, b) = self.rgb();
+        let a = self.alpha() * value;
+        RGBAColor(r, g, b, a)
+    }
+
     /// Convert the color into the RGBA color which is internally used by Plotters
     fn to_rgba(&self) -> RGBAColor {
         let (r, g, b) = self.rgb();

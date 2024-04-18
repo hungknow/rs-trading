@@ -8,13 +8,10 @@ use crate::charts::{
     DrawingBackend,
 };
 
+pub(super) mod cartesian2d;
+
 pub struct ChartContext<'a, DB: DrawingBackend, CT: CoordTranslate> {
-    // pub right_side_bar_area: Option<DrawingArea<DB, Shift>>,
-    // The main drawing area (for Ohlcs)
     pub drawing_area: &'a DrawingArea<DB, CT>,
-    // The drawing area for off chart drawings (Indicators draw their data here)
-    // pub(crate) off_chart_drawings: Vec<DrawingArea<DB, CT>>,
-    // pub(crate) series_anno: Vec<SeriesAnno<'a, DB>>,
 }
 
 impl<'a, DB: DrawingBackend, CT: CoordTranslate> ChartContext<'a, DB, CT> {

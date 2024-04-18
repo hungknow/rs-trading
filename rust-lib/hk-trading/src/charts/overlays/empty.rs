@@ -43,15 +43,15 @@ impl<DB: DrawingBackend> Overlay<DB, Cartesian2d<RangedDateTime<DateTime<Utc>>, 
             Cartesian2d<RangedDateTime<DateTime<Utc>>, RangedCoordf64>,
         >,
     ) -> Result<(), crate::charts::drawing::DrawingAreaErrorKind<DB::ErrorType>> {
-        let x_range = chart_context.drawing_area.get_x_range();
-        let y_range = chart_context.drawing_area.get_y_range();
-        chart_context.drawing_area.draw(&Rectangle::new(
-            [
-                (x_range.start, y_range.start),
-                (x_range.end, y_range.end),
-            ],
-            Color::stroke_width(&BLUE, 2),
-        ));
+        // let x_range = chart_context.drawing_area.get_x_range();
+        // let y_range = chart_context.drawing_area.get_y_range();
+        // chart_context.drawing_area.draw(&Rectangle::new(
+        //     [
+        //         (x_range.start, y_range.start),
+        //         (x_range.end, y_range.end),
+        //     ],
+        //     Color::stroke_width(&BLUE, 2),
+        // ));
         Ok(())
     }
 }
