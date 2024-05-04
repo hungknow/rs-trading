@@ -14,3 +14,5 @@ tracing.workspace = true
 wasm-bindgen.workspace = true
 wasm-bindgen-futures.workspace = true
 hktrading-client.workspace = true
+futures.workspace = true
+parking_lot.workspace = true

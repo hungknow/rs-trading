@@ -4,6 +4,8 @@ pub use errors::*;
 mod platform_utils;
 pub use platform_utils::*;
 
+pub mod event_dispatcher;
+
 if_native! {
   mod native;
 //   pub mod file_util;
