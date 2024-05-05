@@ -10,6 +10,7 @@ pub enum AsyncDispatchResult {
 }
 
 pub trait AsyncListener<T>
+where T: PartialEq + Eq + Hash + Clone + HkConcurrent + 'static
 {
     fn on_event(&mut self, event: &T) -> HkBoxFuture<Option<AsyncDispatchResult>>;
 }
@@ -40,7 +41,6 @@ where
     }
 
     pub async fn dispatch_event<'a>(&mut self, event_identifier: &T) {
-        
         if let Some(listeners) = self.events.get_mut(event_identifier) {
             let unordered_fut: FuturesUnordered<_> = FuturesUnordered::new();
             for (id, listener) in listeners.iter_mut().enumerate() {
